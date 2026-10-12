@@ -1,0 +1,706 @@
+<title>Collective Seoul Archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: centered single column, wide margins, Futura-like wordmark at the top of every page; the only rule sits above the designer footer. Single light theme by design (white paper, black ink). */
+:root{
+  --paper:#ffffff;
+  --ink:#000000;
+  --mute:#6b6b6b;
+  --faint:#f2f2f2;
+  --warn:#b00020;
+  --line-soft:#c8c8c8;
+  --flash:#DAFF35;
+  --rule:1px solid var(--ink);
+  --f-sans:"Futura","Futura PT","Jost","Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif;
+  --f-mono:"Futura","Futura PT","Jost",system-ui,-apple-system,sans-serif;
+  color-scheme:light;
+}
+*,*::before,*::after{box-sizing:border-box;transition:none!important;animation:none!important}
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-sans);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:inherit}
+:focus-visible{outline:1px solid var(--ink);outline-offset:3px}
+#app{min-height:100%;display:flex;flex-direction:column}
+.wrap{width:100%;max-width:960px;margin:0 auto;padding-inline:16px}
+.wrap.narrow{max-width:720px}
+.wrap.wide{max-width:1400px}
+.mono{font-family:var(--f-mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-variant-numeric:tabular-nums}
+.muted{color:var(--mute);font-size:13px}
+.on{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:5px}
+.grow{flex:1}
+
+/* bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);background:var(--paper);border-bottom:var(--rule);z-index:10}
+.bar .wrap{display:flex;align-items:center;gap:12px;height:52px}
+.back{font-size:20px;line-height:1;padding:8px 8px 8px 0}
+.ttl{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st{color:var(--mute);text-transform:none;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:45vw}
+
+/* public pages: centered wordmark head, open white space, one rule above the designer footer */
+.page{flex:1;display:flex;flex-direction:column;width:100%;max-width:640px;margin:0 auto;padding-inline:max(16px,7vw);padding-block:0 40px}
+@media (min-width:640px){.page{padding-inline:44px}}
+.head{position:relative;text-align:center;padding-top:40px}
+.head .brand{font-size:17px;letter-spacing:-.005em}
+.head .brand img{display:block;height:18px;width:auto;max-width:60vw}
+.head .ptitle{margin:44px 0 0;font-size:24px;font-weight:400;letter-spacing:-.005em;line-height:1.2}
+.head.nav{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;padding-top:48px}
+.head.nav .ptitle{margin:0}
+.head .hback{justify-self:start;margin-left:-8px;padding:8px;color:var(--ink);-webkit-tap-highlight-color:transparent}
+.head .hback svg{display:block;width:24px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:square;stroke-linejoin:miter}
+.inset{padding-inline:clamp(0px,6.5vw,32px)}
+.lbl{font-size:9px;line-height:1.2;letter-spacing:.02em;margin-bottom:6px}
+.val{font-size:13px;line-height:1.45;overflow-wrap:anywhere}
+.num{font-family:var(--f-mono);font-size:15px;letter-spacing:.02em}
+.th img,.th svg,.mini img,.mini svg,.tbox img,.tbox svg{display:block;width:100%;height:100%;object-fit:contain}
+.th svg,.mini svg,.tbox svg{fill:none;stroke:currentColor;stroke-width:1.4;stroke-linejoin:round;stroke-linecap:round}
+
+/* intro */
+.intro{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 16px;text-align:center}
+.wordmark{margin:0;font-size:clamp(38px,11.5vw,76px);font-weight:400;letter-spacing:-.01em;line-height:1}
+.logo img{display:block;max-width:min(360px,86vw);max-height:160px}
+.intro .langs{margin-top:64px}
+.langs{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:13px;letter-spacing:.01em}
+.langs button{padding:3px 6px}
+.langs.row{flex-direction:row;gap:10px;font-size:11px}
+.hint{margin:22px 0 0;color:var(--mute);font-size:11px}
+
+/* menu */
+.menu{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(22px,7vw,36px);padding:48px 0;text-align:center}
+.menu .item{font-size:clamp(26px,11.8vw,52px);line-height:1.1;letter-spacing:-.005em}
+.menu .item{-webkit-tap-highlight-color:transparent}
+.menu .item.flash{color:var(--flash)}
+.enter{margin-top:56px;padding:12px;color:var(--ink);-webkit-tap-highlight-color:transparent}
+.enter svg{display:block;width:48px;height:24px;fill:none;stroke:currentColor;stroke-width:4.4;stroke-linecap:square;stroke-linejoin:miter}
+.enter.flash{color:var(--flash)}
+.cell,.fi{-webkit-tap-highlight-color:transparent}
+.cell.flash,.fi.flash{color:var(--flash)}
+.timg::after{content:"";position:absolute;inset:0;background:var(--flash);-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat;visibility:hidden}
+.flash .timg img{visibility:hidden}
+.flash .timg::after{visibility:visible}
+.edit-link{position:fixed;left:0;right:0;bottom:calc(20px + env(safe-area-inset-bottom,0px));margin:auto;width:max-content;font-size:11px;color:var(--mute);text-decoration:underline;text-underline-offset:3px}
+
+/* gallery */
+.views{display:flex;justify-content:center;margin-top:18px}
+.gal{margin-top:56px;margin-bottom:24px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 14px}
+.cell{position:relative;display:block;width:100%;aspect-ratio:1}
+.cell .no,.fi .no{position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:9px;letter-spacing:.04em}
+.cell .th{position:absolute;inset:16% 10% 6%}
+.free{position:relative;width:100%;aspect-ratio:4/5}
+.fi{position:absolute;display:block;aspect-ratio:1;transform:translate(-50%,-50%)}
+.fi .th{position:absolute;inset:12% 0 0}
+.fi .no{top:-2px;left:-10%}
+.free.edit{outline:1px dashed var(--mute)}
+.free.edit .fi{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.free.edit .fi.sel{outline:1px solid var(--ink);z-index:2}
+
+/* detail */
+.det{flex:1;display:flex;flex-direction:column}
+.dtop{margin-top:56px;text-align:center}
+.dname{margin-top:6px;font-size:15px;line-height:1.3;overflow-wrap:anywhere}
+.det .big{width:min(78%,340px);aspect-ratio:1;margin:40px auto 0}
+.info{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr) auto;gap:16px;margin-top:56px}
+.capt+.capt{margin-top:44px}
+.capt{margin:56px 0 0;font-size:13px;line-height:1.6;white-space:pre-line;overflow-wrap:anywhere;max-width:62ch}
+.photos{display:grid;gap:12px;margin-top:48px}
+.photos img{display:block;width:100%}
+.ph{aspect-ratio:4/3;border:1px solid var(--line-soft);display:grid;place-items:center;color:var(--mute);font-size:11px;text-align:center;padding:16px}
+.pager{display:flex;justify-content:space-between;margin-top:40px;font-family:var(--f-mono);font-size:11px}
+.pager button:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* designer footer */
+.foot{margin-top:auto;padding-top:72px}
+.foot hr{margin:0;border:0;border-top:1px solid var(--ink)}
+.foot .fin{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding-top:40px}
+.foot .fin+.fin{padding-top:28px}
+.foot .fname{min-width:0}
+.foot .fright{text-align:right;font-size:13px;line-height:1.7;min-width:0;overflow-wrap:anywhere}
+.foot a{color:inherit;text-decoration:none}
+.foot a:hover{text-decoration:underline}
+.blink{font-size:13px;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;color:var(--ink);-webkit-tap-highlight-color:transparent}
+.blink.flash{color:var(--flash)}
+
+/* archive: two text columns, then exhibition list + photo stack */
+.alist{margin-top:56px;display:grid;gap:72px}
+.acols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(14px,4vw,28px);align-items:start}
+.acol{display:grid;gap:1.3em;font-size:clamp(9.5px,2.5vw,12.5px);line-height:1.55;overflow-wrap:anywhere}
+.acol p{margin:0;white-space:pre-line}
+.acol:lang(ko){word-break:keep-all}
+.exh{display:grid;justify-items:center;text-align:center;margin-top:48px}
+.exw{width:100%;display:grid;justify-items:center}
+.exi{display:inline-block;position:relative;padding:clamp(2px,.8vw,5px) 0;-webkit-tap-highlight-color:transparent}
+.exi .en{display:inline;font-size:clamp(22px,7vw,40px);line-height:1.1;letter-spacing:-.005em;overflow-wrap:anywhere}
+.exi .ey{position:relative;top:-1.15em;margin-left:3px;font-family:var(--f-mono);font-size:9px;letter-spacing:.02em}
+.exph{display:grid;gap:12px;width:100%;margin:10px 0 24px}
+.exph img{display:block;width:100%;height:auto}
+.stack{position:relative;width:100%;aspect-ratio:4/5;-webkit-tap-highlight-color:transparent}
+.stack .card{position:absolute;left:50%;top:50%;max-width:84%;max-height:84%;width:auto;height:auto;display:block;background:var(--paper);box-shadow:0 1px 4px rgba(0,0,0,.22);user-select:none;-webkit-user-select:none}
+.stack .card.blank{width:74%;height:76%;max-width:none;max-height:none;background:#ececec;box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.stack .cnt{position:absolute;right:0;bottom:-18px;font-family:var(--f-mono);font-size:9px;color:var(--mute)}
+.empty{color:var(--mute);font-size:13px;text-align:center}
+.ahalf{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (max-width:480px){.ahalf{grid-template-columns:1fr}}
+.ahalf textarea{min-height:260px}
+
+/* builder */
+.btabs{display:flex;align-items:center;gap:20px;overflow-x:auto;padding-block:12px;border-bottom:var(--rule)}
+.btabs>button{white-space:nowrap;padding:4px 0;font-weight:500}
+.note{margin:16px 0 0;border:var(--rule);padding:10px 12px;font-size:13px}
+.blay{display:grid;gap:20px;padding-block:20px 64px}
+.plist{display:flex;overflow-x:auto;border:var(--rule)}
+.pli{display:flex;align-items:center;flex:0 0 auto;border-right:var(--rule)}
+.pli .pick{display:flex;align-items:center;gap:8px;padding:6px 4px 6px 8px;min-width:0;width:150px}
+.pli .nm{min-width:0;flex:1;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini{flex:0 0 auto;width:32px;height:32px}
+.pli .mv{display:flex;flex-direction:column;padding-right:4px}
+.pli .mv button{font-size:11px;line-height:1;padding:3px 4px}
+.pli.cur{background:var(--ink);color:var(--paper)}
+.pli.over{outline:2px solid var(--ink);outline-offset:-3px}
+.prevcol{min-width:0}
+.plabel{margin-bottom:6px}
+.prev{border:var(--rule);padding-inline:16px;max-height:80vh;overflow:auto}
+@media (min-width:760px){
+  .blay{grid-template-columns:220px minmax(0,1fr)}
+  .plist{flex-direction:column;overflow-x:visible;overflow-y:auto;max-height:80vh;position:sticky;top:64px;align-self:start}
+  .pli{border-right:0;border-bottom:var(--rule)}
+  .pli .pick{width:auto;flex:1}
+  .prevcol{grid-column:1/-1}
+}
+@media (min-width:1180px){
+  .blay{grid-template-columns:220px minmax(0,1fr) 380px}
+  .prevcol{grid-column:auto;position:sticky;top:64px;align-self:start}
+}
+.bform,.bnarrow{display:grid;gap:18px;min-width:0;align-content:start}
+.bnarrow{max-width:760px;padding-block:20px 64px}
+.fhead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.fhead h2{margin:0;font-size:20px;font-weight:500;min-width:0;overflow-wrap:anywhere}
+.fld{display:grid;gap:6px;min-width:0}
+.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (max-width:480px){.pair{grid-template-columns:1fr}}
+input:not([type=range]):not([type=file]),textarea{width:100%;border:var(--rule);border-radius:0;padding:8px 10px;font:inherit;font-size:16px;background:var(--paper);color:var(--ink)}
+textarea{min-height:120px;resize:vertical}
+input[type=range]{accent-color:var(--ink);flex:1;min-width:120px}
+.btn{display:inline-flex;align-items:center;border:var(--rule);padding:7px 12px;font-size:13px;white-space:nowrap;cursor:pointer;background:var(--paper)}
+.btn.solid{background:var(--ink);color:var(--paper)}
+.btn.warn,.warn{border-color:var(--warn);color:var(--warn)}
+.thumbrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tbox{width:88px;height:88px;border:var(--rule);padding:8px}
+.phl{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.phi{border:var(--rule)}
+.phi img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}
+.phc{display:flex;justify-content:space-between;border-top:var(--rule)}
+.phc button{padding:4px 8px;font-size:12px}
+.ftools{display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-height:40px;padding-block:10px}
+.ahead{display:flex;justify-content:space-between;align-items:center;border-bottom:var(--rule);padding-bottom:10px}
+.acard{display:grid;gap:8px;padding-bottom:18px;border-bottom:var(--rule)}
+.arow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.arow input{max-width:140px}
+.gate{flex:1;display:grid;place-items:center;padding:48px 16px;text-align:center}
+</style>
+
+<div id="app"></div>
+
+<script>
+(function(){
+// the exported public site injects its data here (no db, no builder)
+const STATIC = window.__CS_STATIC__ || null;
+const N = 24;
+const IDS = Array.from({length:N}, (_, i) => 'p' + String(i + 1).padStart(2, '0'));
+const TX = {
+  ko:{designer:'디자이너',typology:'유형',year:'연도',exhibition:'전시',caption:'설명',photo:'사진',photoTodo:'업로드 예정',archiveSub:'브랜드 히스토리',seoulSub:'24개의 제품',hint:'밑줄 친 언어를 한 번 더 누르면 입장합니다',prev:'이전',next:'다음',edit:'편집',empty:'아직 등록된 기록이 없습니다.',loading:'불러오는 중…',back:'뒤로',objects:'24 Objects'},
+  en:{designer:'Designer',typology:'Typology',year:'Year',exhibition:'Exhibition',caption:'Caption',photo:'Photo',photoTodo:'to be added',archiveSub:'Brand history',seoulSub:'24 objects',hint:'Tap the underlined language again to enter',prev:'Prev',next:'Next',edit:'Edit',empty:'No entries yet.',loading:'Loading…',back:'Back',objects:'24 Objects'}
+};
+// Placeholder line drawings until the toon-render PNGs are uploaded.
+const PH = [
+  '<path d="M33 16v46M67 16v46M33 16h34M33 28h34M27 62h46v6H27zM31 68v22M69 68v22"/>',
+  '<ellipse cx="50" cy="34" rx="24" ry="7"/><path d="M26 34v5c0 5 48 5 48 0v-5M33 43l-7 45M67 43l7 45M31 70h38"/>',
+  '<path d="M34 18h32l10 26H24zM50 44v40M36 88h28"/>',
+  '<path d="M12 42h76v6H12zM18 48v40M82 48v40"/>',
+  '<path d="M42 14h16v9c0 4 14 10 14 31s-9 34-22 34-22-13-22-34 14-27 14-31z"/>',
+  '<path d="M22 12v78M78 12v78M22 30h56M22 52h56M22 74h56"/>'
+];
+
+const ls = {
+  get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
+  set(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
+};
+const S = {
+  lang: 'en',
+  view: ls.get('cs.view') === 'grid' ? 'grid' : 'free',
+  products:{}, archive:{}, config:{}, gone:new Set(),
+  db:null, assets:null, canEdit:false, ready:false, loaded:false,
+  demo: !STATIC && !(window.claude && window.claude.use),
+  sel:'p01', ex:null, exTop:0, btab:'products', freeSel:null, confirm:null, status:'', dragPid:null
+};
+let drag = null;
+
+const tx = k => TX[S.lang][k];
+const pad = n => String(n).padStart(2, '0');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* one text per field; legacy {ko,en} values fold into one (long text keeps both, EN first) */
+const txt = (x, long) => { if (x == null) return ''; if (typeof x !== 'object') return String(x); const e = String(x.en || '').trim(), k = String(x.ko || '').trim(); if (!e || !k || e === k) return e || k; return long ? e + '\n\n' + k : e; };
+const loc = x => txt(x).trim();
+const paras = x => txt(x, true).split(/\n\s*\n/).map(t => t.trim()).filter(Boolean);
+const src = id => STATIC ? (STATIC.files[id] || '') : '/_blob/' + id;
+const clone = o => JSON.parse(JSON.stringify(o));
+function setPath(o, path, v){ const k = path.split('.'); let t = o; for (let i = 0; i < k.length - 1; i++) t = t[k[i]]; t[k[k.length - 1]] = v; }
+function rnd(seed){ let a = seed * 2654435761 >>> 0; return () => { a = a + 0x6D2B79F5 >>> 0; let t = a; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+/* ---------- data: pending local edits win over snapshots until saved ---------- */
+const pend = {}, timers = {}, queues = {};
+let vc = 0;
+function setStatus(m){ S.status = m; const el = document.getElementById('bstatus'); if (el) el.textContent = m; }
+function apply(path, data){
+  const [col, id] = path.split('/');
+  if (col === 'products') S.products[id] = data;
+  else if (col === 'archive') S.archive[id] = data;
+  else S.config = data;
+}
+function edit(path, data, delay){
+  const v = ++vc; pend[path] = {data, v};
+  clearTimeout(timers[path]);
+  setStatus('편집 중…');
+  if (!delay) flush(path); else timers[path] = setTimeout(() => flush(path), delay);
+}
+function flush(path){
+  clearTimeout(timers[path]);
+  const p = pend[path]; if (!p) return;
+  const {data, v} = p;
+  queues[path] = (queues[path] || Promise.resolve())
+    .then(() => S.db ? S.db.doc(path).set(data) : null)
+    .then(() => {
+      apply(path, data);
+      if (pend[path] && pend[path].v === v) delete pend[path];
+      setStatus(S.db ? '저장됨' : '반영됨 (미리보기 모드: 새로고침하면 사라짐)');
+    }, e => setStatus('저장 실패 (' + ((e && e.code) || 'unknown') + '). 다시 수정하면 재시도합니다.'));
+}
+window.addEventListener('pagehide', () => Object.keys(pend).forEach(flush));
+
+function normP(r, i, id){
+  return {id, order: typeof r.order === 'number' ? r.order : i, thumb: r.thumb || null,
+    designers: normDesigners(r), name:txt(r.name), typology:txt(r.typology), caption:txt(r.caption, true),
+    year: r.year ?? '', exhibition:txt(r.exhibition),
+    photos: Array.isArray(r.photos) ? r.photos.slice() : [],
+    freePos: r.freePos ? {x:+r.freePos.x, y:+r.freePos.y, w:+r.freePos.w} : null};
+}
+function normDesigners(r){
+  const list = Array.isArray(r.designers) ? r.designers : [{label:'Designer', name:r.designer, ig:r.designerIg, email:r.designerEmail}];
+  const out = list.map(x => ({label: (x && x.label) || 'Designer', name: txt(x && x.name), ig: (x && x.ig) || '', email: (x && x.email) || ''}));
+  return out.length ? out : [{label:'Designer', name:'', ig:'', email:''}];
+}
+function product(id){ const path = 'products/' + id; return normP((pend[path] && pend[path].data) || S.products[id] || {}, IDS.indexOf(id), id); }
+function plist(){ return IDS.map(product).sort((a, b) => a.order - b.order || a.id.localeCompare(b.id)); }
+function saveP(p, delay){ const {id, ...d} = p; edit('products/' + id, d, delay); refreshSide(); }
+
+function aEntry(id){ const path = 'archive/' + id; const r = (pend[path] && pend[path].data) || S.archive[id] || {}; return {order: r.order ?? 0, year: r.year ?? '', title:txt(r.title), photos: Array.isArray(r.photos) ? r.photos.slice() : (r.image ? [r.image] : [])}; }
+function alist(){
+  const ids = new Set(Object.keys(S.archive));
+  Object.keys(pend).forEach(k => { if (k.startsWith('archive/')) ids.add(k.slice(8)); });
+  return [...ids].filter(id => !S.gone.has(id)).map(id => ({id, ...aEntry(id)})).sort((a, b) => a.order - b.order || a.id.localeCompare(b.id));
+}
+function conf(){ const r = (pend['site/config'] && pend['site/config'].data) || S.config || {}; return {logo: r.logo || null, brand: r.brand || '', introL: r.introL != null ? String(r.introL) : (r.archiveIntro && typeof r.archiveIntro === 'object' ? String(r.archiveIntro.ko || '') : txt(r.archiveIntro)), introR: r.introR != null ? String(r.introR) : (r.archiveIntro && typeof r.archiveIntro === 'object' ? String(r.archiveIntro.en || '') : ''), brief: {id: (r.brief && r.brief.id) || null, name: (r.brief && r.brief.name) || '', url: (r.brief && r.brief.url) || '', label: (r.brief && r.brief.label) || ''}}; }
+function saveC(c, delay){ edit('site/config', c, delay); }
+
+function fpos(p){
+  if (p.freePos && isFinite(p.freePos.x)) return p.freePos;
+  const i = IDS.indexOf(p.id), r = rnd(i + 7);
+  return {x: 13 + (i % 4) * 24.5 + (r() - .5) * 9, y: 8 + Math.floor(i / 4) * 16.8 + (r() - .5) * 4, w: 13 + r() * 4};
+}
+
+/* ---------- views ---------- */
+function thumb(p){ return p.thumb ? `<img src="${src(p.thumb)}" alt="" loading="lazy" draggable="false">` : `<svg viewBox="0 0 100 100" aria-hidden="true">${PH[IDS.indexOf(p.id) % PH.length]}</svg>`; }
+function bar(title, back, wide){ return `<header class="bar"><div class="wrap ${wide ? 'wide' : ''}"><button class="back" data-go="${back}" aria-label="${tx('back')}">←</button><div class="ttl mono">${esc(title)}</div></div></header>`; }
+function head(title, back){
+  if (back) return `<header class="head nav"><button class="hback" data-go="${back}" aria-label="${tx('back')}"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M23 8H2.5M9 1.5L2.5 8 9 14.5"/></svg></button>${title ? `<h1 class="ptitle">${esc(title)}</h1>` : '<span></span>'}<span></span></header>`;
+  return `<header class="head">${back ? `<button class="hback" data-go="${back}" aria-label="${tx('back')}">←</button>` : ''}<button class="brand" data-go="intro" aria-label="${esc(brandName())} · 처음으로">${conf().logo ? `<img src="${src(conf().logo)}" alt="${esc(brandName())}">` : esc(brandName())}</button>${title ? `<h1 class="ptitle">${esc(title)}</h1>` : ''}</header>`;
+}
+function brandName(){ return conf().brand || 'Toyo Gagu Club'; }
+function igHandle(v){ return String(v || '').trim().replace(/^@/, '').replace(/^https?:\/\/(www\.)?instagram\.com\//i, '').replace(/\/.*$/, ''); }
+function briefFoot(b){
+  const label = esc(b.label || 'Community Brief');
+  const url = /^https?:\/\//i.test(b.url || '') ? b.url : '';
+  if (!b.id && !url) return '';
+  const link = b.id ? `<button class="blink" data-brief>${label} ↓</button>` : `<a class="blink" href="${esc(url)}" target="_blank" rel="noopener">${label} ↗</a>`;
+  return `<footer class="foot"><hr><div class="fin inset">${link}</div></footer>`;
+}
+function foot(people){
+  const rows = people.map(x => ({...x, h: igHandle(x.ig)})).filter(x => x.name || x.h || x.email);
+  if (!rows.length) return '';
+  return `<footer class="foot"><hr>${rows.map(x => `<div class="fin inset"><div class="fname"><div class="lbl">${esc(x.label || 'Designer')}</div><div class="val">${esc(x.name || '—')}</div></div>
+  <div class="fright">${x.h ? `<div><a href="https://www.instagram.com/${encodeURIComponent(x.h)}/" target="_blank" rel="noopener">@${esc(x.h)}</a></div>` : ''}${x.email ? `<div>${esc(x.email)}</div>` : ''}</div></div>`).join('')}</footer>`;
+}
+
+function vIntro(){
+  const c = conf();
+  return `<main class="intro">${c.logo ? `<div class="logo"><img src="${src(c.logo)}" alt="${esc(brandName())}"></div>` : `<h1 class="wordmark">${esc(brandName())}</h1>`}
+  <button class="enter" data-go="menu" data-flash aria-label="Enter"><svg viewBox="0 0 48 24" aria-hidden="true"><path d="M2 12h40M31 3l11 9-11 9"/></svg></button></main>`;
+}
+function vMenu(){
+  return `<div class="page">${head('', '')}<main class="menu"><button class="item" data-go="archive" data-flash>Archive</button><button class="item" data-go="seoul" data-flash>Collective Seoul</button></main></div>
+  ${(S.canEdit || S.demo) ? `<button class="edit-link" data-go="builder">Builder · ${tx('edit')}</button>` : ''}`;
+}
+// thumbnail wrapper; an uploaded PNG also carries itself as a mask so the tap flash can recolor the line art
+function thSpan(p){ return p.thumb ? `<span class="th timg" style="--m:url('${src(p.thumb)}')">${thumb(p)}</span>` : `<span class="th">${thumb(p)}</span>`; }
+function vGrid(ps){
+  return `<div class="grid">${ps.map((p, i) => `<button class="cell" data-go="${p.id}" data-flash aria-label="${pad(i + 1)} ${esc(loc(p.name))}"><span class="no">${pad(i + 1)}</span>${thSpan(p)}</button>`).join('')}</div>`;
+}
+function vFree(ps, editing){
+  return `<div class="free ${editing ? 'edit' : ''}">${ps.map((p, i) => {
+    const f = fpos(p), st = `left:${f.x}%;top:${f.y}%;width:${f.w}%`;
+    const inner = `${thSpan(p)}<span class="no">${pad(i + 1)}</span>`;
+    return editing
+      ? `<div class="fi ${S.freeSel === p.id ? 'sel' : ''}" data-fid="${p.id}" style="${st}">${inner}</div>`
+      : `<button class="fi" data-go="${p.id}" data-flash style="${st}" aria-label="${pad(i + 1)} ${esc(loc(p.name))}">${inner}</button>`;
+  }).join('')}</div>`;
+}
+function vSeoul(){
+  const ps = plist();
+  return `<div class="page">${head('Collective Seoul', 'menu')}
+  <div class="views"><div class="langs row"><button data-view="free" class="${S.view === 'free' ? 'on' : ''}">Free</button><button data-view="grid" class="${S.view === 'grid' ? 'on' : ''}">Grid</button></div></div>
+  <main class="gal">${S.view === 'grid' ? vGrid(ps) : vFree(ps, false)}</main></div>`;
+}
+function vDetail(id, full){
+  const ps = plist(), i = ps.findIndex(p => p.id === id), p = ps[i];
+  const prev = ps[(i - 1 + N) % N], next = ps[(i + 1) % N];
+  const photos = p.photos.length
+    ? p.photos.map(a => `<img src="${src(a)}" alt="" loading="lazy">`).join('')
+    : (full ? '' : [1, 2].map(n => `<div class="ph">${tx('photo')} ${pad(n)} · ${tx('photoTodo')}</div>`).join(''));
+  return `<article class="det"><div class="dtop"><div class="num">${pad(i + 1)}</div><div class="dname">${esc(loc(p.name) || '—')}</div></div><div class="big th">${thumb(p)}</div>
+  <div class="inset"><div class="info">
+    <div><div class="lbl">Typology</div><div class="val">${esc(loc(p.typology) || '—')}</div></div>
+    <div><div class="lbl">Exhibition</div><div class="val">${esc(loc(p.exhibition) || '—')}</div></div>
+    <div><div class="lbl">Year</div><div class="val">${esc(p.year || '—')}</div></div>
+  </div>
+  ${paras(p.caption).map(t => `<p class="capt">${esc(t)}</p>`).join('')}
+  ${photos ? `<div class="photos">${photos}</div>` : ''}
+  ${full ? `<nav class="pager"><button data-go="${prev.id}">← ${pad(i === 0 ? N : i)}</button><button data-go="${next.id}">${pad(i === N - 1 ? 1 : i + 2)} →</button></nav>` : ''}</div>
+  ${foot(p.designers.map(x => ({label: x.label, name: loc(x.name), ig: x.ig, email: x.email})))}</article>`;
+}
+// stacked photos, macOS-stack style: the current photo on top, the rest fanned underneath at fixed tilts
+const TILT = [-2, 4, -5, 7, -8];
+function stackHtml(e){
+  const ph = e ? e.photos : [];
+  if (!ph.length) return `<div class="stack" aria-hidden="true">${[1, 0].map(k => `<span class="card blank" style="transform:translate(-50%,-50%) rotate(${TILT[k]}deg)"></span>`).join('')}</div>`;
+  const top = ((S.exTop % ph.length) + ph.length) % ph.length, n = Math.min(ph.length, TILT.length);
+  const layers = Array.from({length:n}, (_, k) => (top + k) % ph.length).reverse();
+  return `<button class="stack" data-stack aria-label="${esc(e.title)} 사진 ${top + 1} / ${ph.length}${ph.length > 1 ? ' · 다음 사진' : ''}">${layers.map((j, idx) => { const k = n - 1 - idx; return `<img class="card" src="${src(ph[j])}" alt="" draggable="false" style="transform:translate(-50%,-50%) rotate(${TILT[k]}deg);z-index:${idx + 1}">`; }).join('')}${ph.length > 1 ? `<span class="cnt">${pad(top + 1)} / ${pad(ph.length)}</span>` : ''}</button>`;
+}
+function exPhotos(e){
+  return e.photos.length ? `<div class="exph">${e.photos.map(x => `<img src="${src(x)}" alt="" loading="lazy">`).join('')}</div>` : '';
+}
+function exhHtml(a){
+  return a.map(e => `<div class="exw"><button class="exi" data-ex="${e.id}" aria-expanded="${e.id === S.ex}"><span class="en">${esc(e.title || '—')}</span><span class="ey">${esc(e.year)}</span></button>${e.id === S.ex ? exPhotos(e) : ''}</div>`).join('');
+}
+function vArchive(){
+  const c = conf(), a = alist();
+  const L = paras(c.introL), Rr = paras(c.introR);
+  const cols = (L.length || Rr.length) ? `<div class="acols"><div class="acol" lang="ko">${L.map(t => `<p>${esc(t)}</p>`).join('')}</div><div class="acol" lang="en">${Rr.map(t => `<p>${esc(t)}</p>`).join('')}</div></div>` : '';
+  const ex = a.length ? `<section class="exh" id="exh">${exhHtml(a)}</section>` : (S.loaded ? '' : `<p class="empty">${tx('loading')}</p>`);
+  return `<div class="page">${head('Archive', 'menu')}<main class="alist">${cols}${ex}</main>
+  ${briefFoot(c.brief)}</div>`;
+}
+
+/* ---------- builder ---------- */
+function upl(kind, multi, accept, text){
+  return S.assets
+    ? `<label class="btn">${text || (multi ? '+ 사진 추가' : '업로드')}<input type="file" accept="${accept || 'image/png,image/jpeg,image/webp,image/gif'}" ${multi ? 'multiple' : ''} data-up="${kind}" hidden></label>`
+    : `<span class="muted">파일 업로드는 편집 권한이 있는 화면에서 할 수 있어요.</span>`;
+}
+function oneF(attr, key, label, val, ta, ph){
+  const id = `f-${key.replace(/\W/g, '')}`;
+  return `<div class="fld"><label class="mono" for="${id}">${label}</label>${ta
+    ? `<textarea id="${id}" ${attr}="${key}" placeholder="${esc(ph || '')}">${esc(val)}</textarea>`
+    : `<input id="${id}" ${attr}="${key}" value="${esc(val)}" placeholder="${esc(ph || '')}">`}</div>`;
+}
+function bList(){
+  return plist().map((p, i) => `<div class="pli ${p.id === S.sel ? 'cur' : ''}" draggable="true" data-pid="${p.id}">
+    <button class="pick" data-sel="${p.id}"><span class="mono">${pad(i + 1)}</span><span class="mini">${thumb(p)}</span><span class="nm">${esc(p.name || '(이름 없음)')}</span></button>
+    <span class="mv"><button data-mv="-1" data-pid="${p.id}" aria-label="위로">↑</button><button data-mv="1" data-pid="${p.id}" aria-label="아래로">↓</button></span></div>`).join('');
+}
+function bForm(){
+  const p = product(S.sel), i = plist().findIndex(x => x.id === p.id);
+  return `<div class="fhead"><h2>${pad(i + 1)} · ${esc(p.name || '이름 없음')}</h2><button class="btn" data-go="${p.id}">페이지 보기 →</button></div>
+  <div class="fld"><span class="mono">썸네일 · Toon render PNG</span><div class="thumbrow"><div class="tbox">${thumb(p)}</div>${upl('thumb')}
+    ${p.thumb ? `<button class="btn ${S.confirm === 'thumb' ? 'warn' : ''}" data-rmthumb>${S.confirm === 'thumb' ? '한 번 더 누르면 삭제' : '삭제'}</button>` : ''}</div></div>
+  ${oneF('data-f', 'name', 'Product name', p.name)}
+  <div class="fld"><span class="mono">디자이너 · ${p.designers.length}명 (하단에 이 순서로 표시)</span>
+  ${p.designers.map((x, k) => `<div class="fld" style="border:1px solid var(--line-soft);padding:10px">
+    <div class="arow"><span class="mono">${k + 1}</span><span class="grow"></span>${p.designers.length > 1 ? `<button class="btn ${S.confirm === 'd' + k ? 'warn' : ''}" data-drm="${k}">${S.confirm === 'd' + k ? '한 번 더 누르면 삭제' : '삭제'}</button>` : ''}</div>
+    <div class="pair"><div class="fld"><label class="mono" for="f-d${k}-label">라벨</label><input id="f-d${k}-label" data-f="designers.${k}.label" value="${esc(x.label)}" placeholder="Designer"></div><span></span></div>
+    ${oneF('data-f', `designers.${k}.name`, '이름', x.name)}
+    <div class="pair"><div class="fld"><label class="mono" for="f-d${k}-ig">Instagram</label><input id="f-d${k}-ig" data-f="designers.${k}.ig" value="${esc(x.ig)}" placeholder="@handle"></div>
+      <div class="fld"><label class="mono" for="f-d${k}-em">Email</label><input id="f-d${k}-em" data-f="designers.${k}.email" type="email" value="${esc(x.email)}" placeholder="name@email.com"></div></div></div>`).join('')}
+  <div><button class="btn" data-dadd>+ 디자이너 추가</button></div></div>
+  ${oneF('data-f', 'typology', 'Typology', p.typology)}
+  <div class="fld"><label class="mono" for="f-year">Year</label><input id="f-year" data-f="year" inputmode="numeric" value="${esc(p.year)}" placeholder="2026"></div>
+  ${oneF('data-f', 'exhibition', 'Exhibition info', p.exhibition)}
+  ${oneF('data-f', 'caption', 'Caption · 디자인 설명 (빈 줄로 문단 구분)', p.caption, true)}
+  <div class="fld"><span class="mono">상세 사진 · ${p.photos.length}장 (텍스트 아래에 이 순서로 나열)</span>
+    ${p.photos.length ? `<div class="phl">${p.photos.map((a, j) => `<div class="phi"><img src="${src(a)}" alt=""><div class="phc"><button data-pmv="-1" data-j="${j}" aria-label="앞으로">↑</button><button data-pmv="1" data-j="${j}" aria-label="뒤로">↓</button><button data-prm="${j}" class="${S.confirm === 'ph' + j ? 'warn' : ''}">${S.confirm === 'ph' + j ? '삭제?' : '✕'}</button></div></div>`).join('')}</div>` : ''}
+    <div>${upl('photos', true)}</div></div>`;
+}
+function bProducts(){
+  return `<div class="blay"><div class="plist" id="plist">${bList()}</div><div class="bform" id="bform">${bForm()}</div>
+  <div class="prevcol"><div class="mono plabel">미리보기</div><div class="prev" id="bprev">${vDetail(S.sel, false)}</div></div></div>`;
+}
+function bFree(){
+  const sp = S.freeSel ? product(S.freeSel) : null;
+  return `<div style="padding-block:16px 64px"><p class="muted" style="margin:0">썸네일을 끌어서 배치하세요. 손을 떼면 저장되고, 방문자는 이 구성을 그대로 보게 됩니다.</p>
+  <div class="ftools">${sp ? `<span class="mono">${pad(plist().findIndex(x => x.id === sp.id) + 1)} · ${esc(sp.name || sp.id)}</span><label class="mono" for="fsize">크기</label><input type="range" id="fsize" min="8" max="45" step="1" value="${Math.round(fpos(sp).w)}">` : `<span class="muted">항목을 누르면 크기를 조절할 수 있어요.</span>`}</div>
+  <div class="freebox" id="freebox">${vFree(plist(), true)}</div></div>`;
+}
+function bArchive(){
+  const c = conf(), a = alist();
+  return `<div class="bnarrow"><div class="fld"><span class="mono">Archive 소개 문구 · 두 단 (빈 줄로 문단 구분)</span>
+    <div class="ahalf"><div class="fld"><label class="mono" for="c-il">왼쪽 단</label><textarea id="c-il" data-cf="introL">${esc(c.introL)}</textarea></div>
+    <div class="fld"><label class="mono" for="c-ir">오른쪽 단</label><textarea id="c-ir" data-cf="introR">${esc(c.introR)}</textarea></div></div></div>
+  <div class="ahead"><span class="mono">전시 목록 · ${a.length}개 (위에서부터 이 순서로 표시)</span><button class="btn solid" data-aadd>+ 전시 추가</button></div>
+  ${a.length ? a.map(e => `<div class="acard" data-aid="${e.id}">
+    <div class="arow"><input id="a-${e.id}-year" data-af="year" value="${esc(e.year)}" placeholder="연도" aria-label="연도"><span class="grow"></span>
+      <button class="btn" data-amv="-1" aria-label="위로">↑</button><button class="btn" data-amv="1" aria-label="아래로">↓</button>
+      <button class="btn ${S.confirm === 'a' + e.id ? 'warn' : ''}" data-arm>${S.confirm === 'a' + e.id ? '한 번 더 누르면 삭제' : '삭제'}</button></div>
+    <input id="a-${e.id}-t" data-af="title" value="${esc(e.title)}" placeholder="전시명" aria-label="전시명">
+    <span class="mono">사진 · ${e.photos.length}장 (전시명 아래에 이 순서로 나열)</span>
+    ${e.photos.length ? `<div class="phl">${e.photos.map((x, j) => `<div class="phi"><img src="${src(x)}" alt=""><div class="phc"><button data-apmv="-1" data-j="${j}" aria-label="앞으로">↑</button><button data-apmv="1" data-j="${j}" aria-label="뒤로">↓</button><button data-aprm="${j}" class="${S.confirm === 'ap' + e.id + j ? 'warn' : ''}">${S.confirm === 'ap' + e.id + j ? '삭제?' : '✕'}</button></div></div>`).join('')}</div>` : ''}
+    <div>${upl('aphotos', true)}</div>
+  </div>`).join('') : `<p class="muted">아직 전시가 없어요. “+ 전시 추가”로 만드세요.</p>`}
+  <div><button class="btn" data-go="archive">페이지 보기 →</button></div></div>`;
+}
+function bSettings(){
+  const c = conf();
+  return `<div class="bnarrow"><div class="fld"><span class="mono">브랜드 로고 · 인트로 화면 중앙</span>
+    <div class="thumbrow"><div class="tbox">${c.logo ? `<img src="${src(c.logo)}" alt="">` : `<span class="mono">Logo</span>`}</div>${upl('logo')}${c.logo ? `<button class="btn" data-rmlogo>로고 빼기</button>` : ''}</div>
+    <span class="muted">투명 배경 PNG 또는 SVG를 권장해요.</span></div>
+  <div class="fld"><label class="mono" for="c-brand">브랜드 이름 (로고가 없으면 이 글자가 워드마크로 보여요)</label><input id="c-brand" data-cf="brand" value="${esc(c.brand)}" placeholder="Toyo Gagu Club"></div>
+  <div class="fld" style="border-top:1px solid var(--ink);padding-top:14px"><span class="mono">Archive 하단 · Community Brief 다운로드 링크</span>
+    <div class="fld"><label class="mono" for="c-bl">링크 문구</label><input id="c-bl" data-cf="brief.label" value="${esc(c.brief.label)}" placeholder="Community Brief"></div>
+    <div class="thumbrow">${c.brief.id ? `<span class="val">${esc(c.brief.name || '업로드한 파일')}</span>` : `<span class="muted">파일 없음</span>`}${upl('brief', false, 'application/pdf', '파일 업로드 (PDF)')}${c.brief.id ? `<button class="btn ${S.confirm === 'brief' ? 'warn' : ''}" data-rmbrief>${S.confirm === 'brief' ? '한 번 더 누르면 삭제' : '파일 삭제'}</button>` : ''}</div>
+    <div class="fld"><label class="mono" for="c-bu">또는 외부 링크 (구글 드라이브 등, 파일이 없을 때 사용)</label><input id="c-bu" data-cf="brief.url" type="url" value="${esc(c.brief.url)}" placeholder="https://"></div></div></div>`;
+}
+function bBody(){ return {products:bProducts, free:bFree, archive:bArchive, settings:bSettings}[S.btab](); }
+function vBuilder(){
+  if (!S.ready && !S.demo) return bar('Builder', 'menu', true) + `<div class="gate muted">권한 확인 중…</div>`;
+  if (!S.canEdit && !S.demo) return bar('Builder', 'menu', true) + `<div class="gate"><p>편집 권한이 있는 사람만 Builder를 열 수 있어요.</p></div>`;
+  const tabs = [['products', '제품 24'], ['free', 'Free 배치'], ['archive', 'Archive'], ['settings', '로고 · 설정']];
+  return `<header class="bar"><div class="wrap wide"><button class="back" data-go="menu" aria-label="뒤로">←</button><div class="ttl mono">Builder</div><span id="bstatus" class="mono st">${esc(S.status)}</span></div></header>
+  <main class="wrap wide"><nav class="btabs">${tabs.map(([k, l]) => `<button data-btab="${k}" class="${S.btab === k ? 'on' : ''}">${l}</button>`).join('')}</nav>
+  ${!S.db ? `<p class="note">미리보기 모드예요. 저장소가 연결되지 않아 수정한 내용은 새로고침하면 사라집니다.</p>` : ''}
+  <div id="bbody">${bBody()}</div></main>`;
+}
+
+/* ---------- render & routing (bare #tokens, no transitions) ---------- */
+function route(){ return location.hash.replace(/^#/, '') || 'intro'; }
+function go(r){ S.confirm = null; if (location.hash === '#' + r) { render(); } else { location.hash = r; } }
+function render(){
+  const r = route(), app = document.getElementById('app');
+  if (r === 'menu') app.innerHTML = vMenu();
+  else if (r === 'archive') app.innerHTML = vArchive();
+  else if (r === 'seoul') app.innerHTML = vSeoul();
+  else if (IDS.includes(r)) app.innerHTML = `<div class="page">${head('', 'seoul')}${vDetail(r, true)}</div>`;
+  else if (r === 'builder' && !STATIC) app.innerHTML = vBuilder();
+  else app.innerHTML = vIntro();
+}
+window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
+function refreshSide(){
+  const l = document.getElementById('plist'); if (l && !S.dragPid) l.innerHTML = bList();
+  const pv = document.getElementById('bprev'); if (pv) pv.innerHTML = vDetail(S.sel, false);
+}
+function rbody(){ const b = document.getElementById('bbody'); if (b) b.innerHTML = bBody(); }
+function onData(){
+  S.loaded = true;
+  if (route() !== 'builder') { render(); return; }
+  const ae = document.activeElement, typing = ae && /^(INPUT|TEXTAREA)$/.test(ae.tagName) && ae.type !== 'file';
+  if (drag) return;
+  if (S.btab === 'products') { refreshSide(); if (!typing) { const f = document.getElementById('bform'); if (f) f.innerHTML = bForm(); } }
+  else if (!typing) rbody();
+}
+
+/* ---------- builder actions ---------- */
+function reorder(order){ order.forEach((id, k) => { const p = product(id); if (p.order !== k) { p.order = k; saveP(p, 0); } }); }
+function move(id, d){ const a = plist().map(p => p.id), i = a.indexOf(id), j = i + d; if (j < 0 || j >= a.length) return; [a[i], a[j]] = [a[j], a[i]]; reorder(a); render(); }
+function errText(e){
+  const c = e && e.code;
+  return ({too_large:'파일이 너무 커요 (최대 20MB)', unsupported_type:'PNG, JPG, WEBP, GIF만 올릴 수 있어요', rate_limited:'잠시 후 다시 시도해 주세요', quota_or_state:'저장 공간이 부족해요', store_unavailable:'일시적인 오류예요. 다시 시도해 주세요'})[c] || ('업로드 실패 (' + (c || 'unknown') + ')');
+}
+async function upload(files, kind, aid){
+  if (!S.assets) return;
+  for (const f of files) {
+    let r;
+    try { setStatus('업로드 중… ' + f.name); r = await S.assets.upload(f); }
+    catch(e) { setStatus(errText(e)); return; }
+    if (kind === 'thumb' || kind === 'photos') {
+      const p = product(S.sel);
+      if (kind === 'thumb') { const old = p.thumb; p.thumb = r.id; saveP(p, 0); if (old) S.assets.delete(old).catch(() => {}); }
+      else { p.photos.push(r.id); saveP(p, 0); }
+      const f2 = document.getElementById('bform'); if (f2) f2.innerHTML = bForm();
+    } else if (kind === 'aphotos') {
+      const e = aEntry(aid); e.photos.push(r.id); edit('archive/' + aid, e, 0); rbody();
+    } else if (kind === 'brief') {
+      const c = conf(), old = c.brief.id; c.brief.id = r.id; c.brief.name = f.name; saveC(c, 0); if (old) S.assets.delete(old).catch(() => {}); rbody();
+    } else if (kind === 'logo') {
+      const c = conf(), old = c.logo; c.logo = r.id; saveC(c, 0); if (old) S.assets.delete(old).catch(() => {}); rbody();
+    }
+  }
+}
+async function downloadBrief(btn){
+  const b = conf().brief; if (!b.id || btn.dataset.busy) return;
+  btn.dataset.busy = '1'; btn.classList.add('flash'); setTimeout(() => btn.classList.remove('flash'), 140);
+  const name = b.name || 'Community Brief.pdf';
+  try {
+    const dl = await use('downloads');
+    const blobData = await fetch(src(b.id)).then(r => { if (!r.ok) throw new Error('fetch'); return r.blob(); });
+    if (dl) { await dl.save({filename: name, data: blobData}); }
+    else { const a = document.createElement('a'); a.href = src(b.id); a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
+  } catch(e) { /* declined or unavailable: nothing to do */ }
+  delete btn.dataset.busy;
+}
+function newArchiveId(){ try { if (S.db) return S.db.collection('archive').doc().id; } catch(e){} return 'a' + Date.now().toString(36); }
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('button'); if (!t) return;
+  const d = t.dataset;
+  if (d.go && 'flash' in d) {
+    if (t.dataset.busy) return; t.dataset.busy = '1';
+    t.classList.add('flash');
+    setTimeout(() => t.classList.remove('flash'), 140);
+    setTimeout(() => go(d.go), 220);
+    return;
+  }
+  if (d.go) { go(d.go); return; }
+  if (d.ex) {
+    S.ex = S.ex === d.ex ? null : d.ex; S.exTop = 0;
+    const box = document.getElementById('exh'); if (box) box.innerHTML = exhHtml(alist());
+    return;
+  }
+  if ('stack' in d) { S.exTop++; const box = document.getElementById('exh'); if (box) box.innerHTML = exhHtml(alist()); return; }
+  if (d.view) { S.view = d.view; ls.set('cs.view', S.view); render(); return; }
+  if (d.btab) { S.btab = d.btab; S.confirm = null; render(); return; }
+  if (d.sel) { S.sel = d.sel; S.confirm = null; render(); return; }
+  if (d.mv) { move(d.pid, +d.mv); return; }
+  if ('rmthumb' in d) {
+    if (S.confirm !== 'thumb') { S.confirm = 'thumb'; } else { const p = product(S.sel), old = p.thumb; p.thumb = null; saveP(p, 0); S.confirm = null; if (old && S.assets) S.assets.delete(old).catch(() => {}); }
+    document.getElementById('bform').innerHTML = bForm(); return;
+  }
+  if ('dadd' in d) { const p = product(S.sel); p.designers.push({label:'Designer', name:'', ig:'', email:''}); saveP(p, 0); document.getElementById('bform').innerHTML = bForm(); return; }
+  if (d.drm !== undefined) {
+    const key = 'd' + d.drm;
+    if (S.confirm !== key) { S.confirm = key; } else { const p = product(S.sel); p.designers.splice(+d.drm, 1); saveP(p, 0); S.confirm = null; }
+    document.getElementById('bform').innerHTML = bForm(); return;
+  }
+  if (d.pmv) { const p = product(S.sel), j = +d.j, k = j + +d.pmv; if (k >= 0 && k < p.photos.length) { [p.photos[j], p.photos[k]] = [p.photos[k], p.photos[j]]; saveP(p, 0); } document.getElementById('bform').innerHTML = bForm(); return; }
+  if (d.prm !== undefined) {
+    const key = 'ph' + d.prm;
+    if (S.confirm !== key) { S.confirm = key; } else { const p = product(S.sel), [old] = p.photos.splice(+d.prm, 1); saveP(p, 0); S.confirm = null; if (old && S.assets) S.assets.delete(old).catch(() => {}); }
+    document.getElementById('bform').innerHTML = bForm(); return;
+  }
+  if ('aadd' in d) {
+    const id = newArchiveId(), a = alist();
+    edit('archive/' + id, {order: a.length ? a[a.length - 1].order + 1 : 0, year:'', title:'', photos:[]}, 0);
+    rbody(); const inp = document.getElementById('a-' + id + '-year'); if (inp) inp.focus(); return;
+  }
+  const card = t.closest('[data-aid]');
+  if (card) {
+    const aid = card.dataset.aid;
+    if (d.amv) {
+      const a = alist(), i = a.findIndex(x => x.id === aid), j = i + +d.amv;
+      if (j >= 0 && j < a.length) { [a[i], a[j]] = [a[j], a[i]]; a.forEach((x, k) => { if (x.order !== k) { const en = aEntry(x.id); en.order = k; edit('archive/' + x.id, en, 0); } }); }
+      rbody(); return;
+    }
+    if ('arm' in d) {
+      if (S.confirm !== 'a' + aid) { S.confirm = 'a' + aid; rbody(); return; }
+      const en = aEntry(aid); S.gone.add(aid); clearTimeout(timers['archive/' + aid]); delete pend['archive/' + aid]; delete S.archive[aid]; S.confirm = null;
+      if (S.db) S.db.doc('archive/' + aid).delete().then(() => setStatus('삭제됨'), er => setStatus('삭제 실패 (' + (er && er.code) + ')'));
+      if (S.assets) en.photos.forEach(x => S.assets.delete(x).catch(() => {}));
+      rbody(); return;
+    }
+    if (d.apmv) { const en = aEntry(aid), j = +d.j, k = j + +d.apmv; if (k >= 0 && k < en.photos.length) { [en.photos[j], en.photos[k]] = [en.photos[k], en.photos[j]]; edit('archive/' + aid, en, 0); } rbody(); return; }
+    if (d.aprm !== undefined) {
+      const key = 'ap' + aid + d.aprm;
+      if (S.confirm !== key) { S.confirm = key; rbody(); return; }
+      const en = aEntry(aid), [old] = en.photos.splice(+d.aprm, 1); edit('archive/' + aid, en, 0); S.confirm = null; if (old && S.assets) S.assets.delete(old).catch(() => {}); rbody(); return;
+    }
+  }
+  if ('rmbrief' in d) {
+    if (S.confirm !== 'brief') { S.confirm = 'brief'; rbody(); return; }
+    const c = conf(), old = c.brief.id; c.brief.id = null; c.brief.name = ''; saveC(c, 0); S.confirm = null; if (old && S.assets) S.assets.delete(old).catch(() => {}); rbody(); return;
+  }
+  if ('brief' in d) { downloadBrief(t); return; }
+  if ('rmlogo' in d) { const c = conf(), old = c.logo; c.logo = null; saveC(c, 0); if (old && S.assets) S.assets.delete(old).catch(() => {}); rbody(); return; }
+});
+
+document.addEventListener('input', e => {
+  const t = e.target, d = t.dataset;
+  if (d.f) { const p = product(S.sel); setPath(p, d.f, t.value); saveP(p, 600); return; }
+  if (d.cf) { const c = conf(); setPath(c, d.cf, t.value); saveC(c, 600); return; }
+  if (d.af) { const aid = t.closest('[data-aid]').dataset.aid, en = aEntry(aid); setPath(en, d.af, t.value); edit('archive/' + aid, en, 600); return; }
+  if (t.id === 'fsize' && S.freeSel) {
+    const p = product(S.freeSel); p.freePos = {...fpos(p), w: +t.value}; saveP(p, 500);
+    const el = document.querySelector(`.free.edit [data-fid="${S.freeSel}"]`); if (el) el.style.width = t.value + '%';
+  }
+});
+document.addEventListener('change', e => {
+  const t = e.target; if (!t.dataset.up || !t.files || !t.files.length) return;
+  const card = t.closest('[data-aid]');
+  upload([...t.files], t.dataset.up, card && card.dataset.aid); t.value = '';
+});
+
+/* free layout dragging (builder only) */
+document.addEventListener('pointerdown', e => {
+  const it = e.target.closest('.free.edit .fi'); if (!it) return;
+  e.preventDefault();
+  const box = it.parentElement.getBoundingClientRect(), r0 = it.getBoundingClientRect();
+  S.freeSel = it.dataset.fid;
+  document.querySelectorAll('.free.edit .fi.sel').forEach(x => x.classList.remove('sel')); it.classList.add('sel');
+  drag = {id: it.dataset.fid, it, box, ox: e.clientX - (r0.left + r0.width / 2), oy: e.clientY - (r0.top + r0.height / 2), moved: false};
+  try { it.setPointerCapture(e.pointerId); } catch(er){}
+});
+document.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const clamp = v => Math.max(0, Math.min(100, v));
+  drag.x = clamp((e.clientX - drag.ox - drag.box.left) / drag.box.width * 100);
+  drag.y = clamp((e.clientY - drag.oy - drag.box.top) / drag.box.height * 100);
+  drag.it.style.left = drag.x + '%'; drag.it.style.top = drag.y + '%'; drag.moved = true;
+});
+function endDrag(){
+  if (!drag) return;
+  const dd = drag; drag = null;
+  if (dd.moved) { const p = product(dd.id); p.freePos = {x: +dd.x.toFixed(2), y: +dd.y.toFixed(2), w: fpos(p).w}; saveP(p, 0); }
+  rbody();
+}
+document.addEventListener('pointerup', endDrag);
+document.addEventListener('pointercancel', endDrag);
+
+/* product list drag-to-reorder (desktop) */
+document.addEventListener('dragstart', e => { const li = e.target.closest && e.target.closest('.pli'); if (!li) return; S.dragPid = li.dataset.pid; try { e.dataTransfer.setData('text/plain', li.dataset.pid); e.dataTransfer.effectAllowed = 'move'; } catch(er){} });
+document.addEventListener('dragover', e => { const li = e.target.closest && e.target.closest('.pli'); if (!li || !S.dragPid) return; e.preventDefault(); document.querySelectorAll('.pli.over').forEach(x => x !== li && x.classList.remove('over')); li.classList.add('over'); });
+document.addEventListener('drop', e => {
+  const li = e.target.closest && e.target.closest('.pli'); if (!li || !S.dragPid) return; e.preventDefault();
+  const from = S.dragPid; S.dragPid = null;
+  const a = plist().map(p => p.id), fi = a.indexOf(from), ti = a.indexOf(li.dataset.pid);
+  if (fi === ti) { render(); return; }
+  a.splice(fi, 1); a.splice(ti, 0, from);
+  reorder(a); render();
+});
+document.addEventListener('dragend', () => { S.dragPid = null; document.querySelectorAll('.pli.over').forEach(x => x.classList.remove('over')); });
+
+/* ---------- boot ---------- */
+const use = n => { try { return window.claude && window.claude.use ? Promise.resolve(window.claude.use(n)).catch(() => null) : Promise.resolve(null); } catch(e){ return Promise.resolve(null); } };
+if (STATIC) { S.products = STATIC.products || {}; S.archive = STATIC.archive || {}; S.config = STATIC.config || {}; S.ready = S.loaded = true; }
+render();
+(async () => {
+  if (STATIC) return;
+  const [db, user, assets] = await Promise.all([use('db'), use('user'), use('assets')]);
+  S.db = db; S.assets = assets;
+  S.canEdit = user ? await user.canEdit() : false;
+  S.ready = true;
+  if (!db) { S.loaded = true; render(); return; }
+  const fail = er => { if (er && er.code !== 'revoked') setStatus('데이터 연결 오류 (' + er.code + ')'); };
+  db.collection('products').onSnapshot(s => { const m = {}; s.docs.forEach(x => { m[x.id] = x.data(); }); S.products = m; onData(); }, fail);
+  db.collection('archive').onSnapshot(s => { const m = {}; s.docs.forEach(x => { if (!S.gone.has(x.id)) m[x.id] = x.data(); }); S.archive = m; onData(); }, fail);
+  db.doc('site/config').onSnapshot(x => { S.config = x.exists ? x.data() : {}; onData(); }, fail);
+  render();
+})();
+})();
+</script>
