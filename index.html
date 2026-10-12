@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&family=Noto+Sans+KR:wght@400;700&display=swap">
 <style>
-/* Latin text is Futura PT Medium (500) to match macOS's default Futura; Noto Sans KR ships only 400/700, so Hangul stays Regular. */
+/* Latin text: Apple devices use their built-in Futura (Medium at 500) so the public site matches the Builder; others get Adobe Futura PT Medium; Noto Sans KR ships only 400/700, so Hangul stays Regular. */
 /* Layout: centered single column, wide margins, Futura-like wordmark at the top of every page; the only rule sits above the designer footer. Single light theme by design (white paper, black ink). */
 :root{
   --paper:#ffffff;
@@ -15,8 +15,8 @@
   --line-soft:#c8c8c8;
   --flash:#DAFF35;
   --rule:1px solid var(--ink);
-  --f-sans:"futura-pt","Futura","Futura PT","Jost","Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif;
-  --f-mono:"futura-pt","Futura","Futura PT","Jost",system-ui,-apple-system,sans-serif;
+  --f-sans:"Futura","futura-pt","Futura PT","Jost","Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif;
+  --f-mono:"Futura","futura-pt","Futura PT","Jost",system-ui,-apple-system,sans-serif;
   color-scheme:light;
 }
 *,*::before,*::after{box-sizing:border-box;transition:none!important;animation:none!important}
