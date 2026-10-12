@@ -43,6 +43,7 @@ data = json.dumps({'products': products, 'archive': archive, 'config': config, '
 body = open(page, encoding='utf-8').read()
 html = ('<!doctype html><html lang="ko"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
+        '<link rel="stylesheet" href="https://use.typekit.net/ygn5fve.css">'
         '</head><body><script>window.__CS_STATIC__=' + data + ';</script>\n' + body + '\n</body></html>')
 open(os.path.join(out, 'index.html'), 'w', encoding='utf-8').write(html)
 open(os.path.join(out, '.nojekyll'), 'w').close()
