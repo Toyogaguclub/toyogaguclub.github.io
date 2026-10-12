@@ -88,7 +88,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .cell{position:relative;display:block;width:100%;aspect-ratio:1}
 .cell .no,.fi .no{position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:9px;letter-spacing:.04em}
 .cell .th{position:absolute;inset:16% 10% 6%}
-.free{position:relative;width:100%;aspect-ratio:4/5}
+.free{position:relative;width:100%;aspect-ratio:5/8}
 .fi{position:absolute;display:block;aspect-ratio:1;transform:translate(-50%,-50%)}
 .fi .th{position:absolute;inset:12% 0 0}
 .fi .no{top:-2px;left:-10%}
@@ -119,7 +119,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .foot .fright{text-align:right;font-size:13px;line-height:1.7;min-width:0;overflow-wrap:anywhere}
 .foot a{color:inherit;text-decoration:none}
 .foot a:hover{text-decoration:underline}
-.blink{font-size:13px;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;color:var(--ink);-webkit-tap-highlight-color:transparent}
+.bfoot{display:flex;justify-content:center;padding-bottom:24px}
+.blink{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--ink);text-decoration:none;-webkit-tap-highlight-color:transparent}
+.blink span{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+.blink svg{display:block;width:11px;height:14px;fill:none;stroke:currentColor;stroke-width:2.8;stroke-linecap:square;stroke-linejoin:miter}
 .blink.flash{color:var(--flash)}
 
 /* archive: two text columns, then exhibition list + photo stack */
@@ -156,7 +159,9 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .mini{flex:0 0 auto;width:32px;height:32px}
 .pli .mv{display:flex;flex-direction:column;padding-right:4px}
 .pli .mv button{font-size:11px;line-height:1;padding:3px 4px}
+.pli.nophoto{background:var(--flash)}
 .pli.cur{background:var(--ink);color:var(--paper)}
+.pli.cur.nophoto{box-shadow:inset 6px 0 0 var(--flash)}
 .pli.over{outline:2px solid var(--ink);outline-offset:-3px}
 .prevcol{min-width:0}
 .plabel{margin-bottom:6px}
@@ -305,8 +310,9 @@ function saveC(c, delay){ edit('site/config', c, delay); }
 
 function fpos(p){
   if (p.freePos && isFinite(p.freePos.x)) return p.freePos;
-  const i = IDS.indexOf(p.id), r = rnd(i + 7);
-  return {x: 13 + (i % 4) * 24.5 + (r() - .5) * 9, y: 8 + Math.floor(i / 4) * 16.8 + (r() - .5) * 4, w: 13 + r() * 4};
+  // default: 3 columns x 8 rows in display order, each nudged a little off the grid
+  const i = Math.max(0, plist().findIndex(x => x.id === p.id)), r = rnd(IDS.indexOf(p.id) + 7);
+  return {x: 18 + (i % 3) * 32 + (r() - .5) * 10, y: 5.5 + Math.floor(i / 3) * 12.4 + (r() - .5) * 3, w: 17 + r() * 4};
 }
 
 /* ---------- views ---------- */
@@ -322,8 +328,10 @@ function briefFoot(b){
   const label = esc(b.label || 'Community Brief');
   const url = /^https?:\/\//i.test(b.url || '') ? b.url : '';
   if (!b.id && !url) return '';
-  const link = b.id ? `<button class="blink" data-brief>${label} ↓</button>` : `<a class="blink" href="${esc(url)}" target="_blank" rel="noopener">${label} ↗</a>`;
-  return `<footer class="foot"><hr><div class="fin inset">${link}</div></footer>`;
+  const down = '<svg viewBox="0 0 16 20" aria-hidden="true"><path d="M8 1.5v15M2.5 11 8 16.5 13.5 11"/></svg>';
+  const out = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 13.5 13 3M5 2.5h8.5V11"/></svg>';
+  const link = b.id ? `<button class="blink" data-brief>${down}<span>${label}</span></button>` : `<a class="blink" href="${esc(url)}" target="_blank" rel="noopener">${out}<span>${label}</span></a>`;
+  return `<footer class="foot bfoot">${link}</footer>`;
 }
 function foot(people){
   const rows = people.map(x => ({...x, h: igHandle(x.ig)})).filter(x => x.name || x.h || x.email);
@@ -415,7 +423,7 @@ function oneF(attr, key, label, val, ta, ph){
     : `<input id="${id}" ${attr}="${key}" value="${esc(val)}" placeholder="${esc(ph || '')}">`}</div>`;
 }
 function bList(){
-  return plist().map((p, i) => `<div class="pli ${p.id === S.sel ? 'cur' : ''}" draggable="true" data-pid="${p.id}">
+  return plist().map((p, i) => `<div class="pli ${p.id === S.sel ? 'cur' : ''} ${p.photos.length ? '' : 'nophoto'}" draggable="true" data-pid="${p.id}" ${p.photos.length ? '' : 'title="사진 없음"'}>
     <button class="pick" data-sel="${p.id}"><span class="mono">${pad(i + 1)}</span><span class="mini">${thumb(p)}</span><span class="nm">${esc(p.name || '(이름 없음)')}</span></button>
     <span class="mv"><button data-mv="-1" data-pid="${p.id}" aria-label="위로">↑</button><button data-mv="1" data-pid="${p.id}" aria-label="아래로">↓</button></span></div>`).join('');
 }
@@ -552,7 +560,7 @@ async function downloadBrief(btn){
     const dl = await use('downloads');
     const blobData = await fetch(src(b.id)).then(r => { if (!r.ok) throw new Error('fetch'); return r.blob(); });
     if (dl) { await dl.save({filename: name, data: blobData}); }
-    else { const a = document.createElement('a'); a.href = src(b.id); a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
+    else { const a = document.createElement('a'); a.href = src(b.id); a.download = name; a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
   } catch(e) { /* declined or unavailable: nothing to do */ }
   delete btn.dataset.busy;
 }
