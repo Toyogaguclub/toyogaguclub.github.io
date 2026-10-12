@@ -70,7 +70,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 
 /* menu */
 .menu{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(22px,7vw,36px);padding:48px 0;text-align:center}
-.menu .item{font-size:clamp(26px,11.8vw,52px);line-height:1.1;letter-spacing:-.005em}
+.menu .item{font-size:var(--fs,52px);line-height:1.1;letter-spacing:-.005em;white-space:nowrap}
 .menu .item{-webkit-tap-highlight-color:transparent}
 .menu .item.flash{color:var(--flash)}
 .enter{margin-top:56px;padding:12px;color:var(--ink);-webkit-tap-highlight-color:transparent}
@@ -128,15 +128,15 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .blink.flash{color:var(--flash)}
 
 /* archive: two text columns, then exhibition list + photo stack */
-.alist{margin-top:56px;display:grid;gap:72px}
+.alist{margin-top:56px;display:grid;grid-template-columns:minmax(0,1fr);gap:72px}
 .acols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(14px,4vw,28px);align-items:start}
 .acol{display:grid;gap:1.3em;font-size:clamp(9.5px,2.5vw,12.5px);line-height:1.55;overflow-wrap:anywhere}
 .acol p{margin:0;white-space:pre-line}
 .acol:lang(ko){word-break:keep-all}
-.exh{display:grid;justify-items:center;text-align:center;margin-top:48px}
-.exw{width:100%;display:grid;justify-items:center}
-.exi{display:inline-block;position:relative;padding:clamp(2px,.8vw,5px) 0;-webkit-tap-highlight-color:transparent}
-.exi .en{display:inline;font-size:clamp(22px,7vw,40px);line-height:1.1;letter-spacing:-.005em;overflow-wrap:anywhere}
+.exh{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center;margin-top:48px}
+.exw{width:100%;min-width:0;display:grid;grid-template-columns:minmax(0,1fr);justify-items:center}
+.exi{display:inline-block;position:relative;white-space:nowrap;padding:clamp(2px,.8vw,5px) 0;-webkit-tap-highlight-color:transparent}
+.exi .en{display:inline;font-size:var(--fs,40px);line-height:1.1;letter-spacing:-.005em}
 .exi .ey{position:relative;top:-1.15em;margin-left:3px;font-family:var(--f-mono);font-size:9px;letter-spacing:.02em}
 .exph{display:grid;gap:12px;width:100%;margin:10px 0 24px}
 .exph img{display:block;width:100%;height:auto}
@@ -348,7 +348,7 @@ function vIntro(){
   <button class="enter" data-go="menu" data-flash aria-label="Enter"><svg viewBox="0 0 48 24" aria-hidden="true"><path d="M2 12h40M31 3l11 9-11 9"/></svg></button></main>`;
 }
 function vMenu(){
-  return `<div class="page">${head('', '')}<main class="menu"><button class="item" data-go="archive" data-flash>Archive</button><button class="item" data-go="seoul" data-flash>Collective Seoul</button></main></div>
+  return `<div class="page">${head('', '')}<main class="menu" data-fit="52"><button class="item" data-go="archive" data-flash>Archive</button><button class="item" data-go="seoul" data-flash>Collective Seoul</button></main></div>
   ${(S.canEdit || S.demo) ? `<button class="edit-link" data-go="builder">Builder · ${tx('edit')}</button>` : ''}`;
 }
 // thumbnail wrapper; an uploaded PNG also carries itself as a mask so the tap flash can recolor the line art
@@ -407,7 +407,7 @@ function vArchive(){
   const c = conf(), a = alist();
   const L = paras(c.introL), Rr = paras(c.introR);
   const cols = (L.length || Rr.length) ? `<div class="acols"><div class="acol" lang="ko">${L.map(t => `<p>${esc(t)}</p>`).join('')}</div><div class="acol" lang="en">${Rr.map(t => `<p>${esc(t)}</p>`).join('')}</div></div>` : '';
-  const ex = a.length ? `<section class="exh" id="exh">${exhHtml(a)}</section>` : (S.loaded ? '' : `<p class="empty">${tx('loading')}</p>`);
+  const ex = a.length ? `<section class="exh" id="exh" data-fit="40">${exhHtml(a)}</section>` : (S.loaded ? '' : `<p class="empty">${tx('loading')}</p>`);
   return `<div class="page">${head('Archive', 'menu')}<main class="alist">${cols}${ex}</main>
   ${briefFoot(c.brief)}</div>`;
 }
@@ -511,7 +511,24 @@ function render(){
   else if (IDS.includes(r)) app.innerHTML = `<div class="page">${head('', 'seoul')}${vDetail(r, true)}</div>`;
   else if (r === 'builder' && !STATIC) app.innerHTML = vBuilder();
   else app.innerHTML = vIntro();
+  fitText();
 }
+// one shared size per group: as large as the cap allows while its widest line still fits on one line
+function fitText(){
+  document.querySelectorAll('[data-fit]').forEach(box => {
+    const max = +box.dataset.fit, items = [...box.querySelectorAll('.item,.exi')];
+    if (!items.length) return;
+    let fs = max;
+    for (let k = 0; k < 3; k++) {
+      box.style.setProperty('--fs', fs + 'px');
+      const W = box.clientWidth, w = Math.max(...items.map(x => x.scrollWidth));
+      if (w <= W) break;
+      fs = Math.max(14, Math.floor(fs * W / w * 0.985 * 10) / 10);
+    }
+  });
+}
+window.addEventListener('resize', fitText);
+try { document.fonts.ready.then(fitText); document.fonts.addEventListener('loadingdone', fitText); } catch(e){}
 window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
 function refreshSide(){
   const l = document.getElementById('plist'); if (l && !S.dragPid) l.innerHTML = bList();
