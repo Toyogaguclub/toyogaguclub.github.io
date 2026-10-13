@@ -97,7 +97,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .free{position:relative;width:100%;aspect-ratio:5/8}
 .fi{position:absolute;display:block;aspect-ratio:1;transform:translate(-50%,-50%)}
 .fi .th{position:absolute;inset:12% 6% 0}
-.fi .no{top:0;left:0;font-size:27px;line-height:1;letter-spacing:0;transform:translate(-30%,-45%)}
+.fi .no{top:0;left:0;font-size:16px;line-height:1;letter-spacing:0;white-space:nowrap;transform:translate(-30%,-45%)}
+.fi .no.moved{transform:none}
+.free.edit .fi .no{cursor:move;padding:2px;margin:-2px;z-index:3}
+.free.edit .fi .no:hover{background:var(--flash)}
 .free.edit{outline:1px dashed var(--mute)}
 .free.edit .fi{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
 .free.edit .fi.sel{outline:1px solid var(--ink);z-index:2}
@@ -293,7 +296,8 @@ function normP(r, i, id){
     year: r.year ?? '', exhibition:txt(r.exhibition),
     photos: Array.isArray(r.photos) ? r.photos.slice() : [],
     freePos: r.freePos ? {x:+r.freePos.x, y:+r.freePos.y, w:+r.freePos.w} : null,
-    crop: r.crop && isFinite(+r.crop.s) ? {s:+r.crop.s, x:+r.crop.x || 0, y:+r.crop.y || 0} : null};
+    crop: r.crop && isFinite(+r.crop.s) ? {s:+r.crop.s, x:+r.crop.x || 0, y:+r.crop.y || 0} : null,
+    noPos: r.noPos && isFinite(+r.noPos.x) ? {x:+r.noPos.x, y:+r.noPos.y || 0} : null};
 }
 function normDesigners(r){
   const list = Array.isArray(r.designers) ? r.designers : [{label:'Designer', name:r.designer, ig:r.designerIg, email:r.designerEmail}];
@@ -366,7 +370,7 @@ function vGrid(ps){
 function vFree(ps, editing){
   return `<div class="free ${editing ? 'edit' : ''}">${ps.map((p, i) => {
     const f = fpos(p), st = `left:${f.x}%;top:${f.y}%;width:${f.w}%`;
-    const inner = `${thSpan(p)}<span class="no">${pad(i + 1)}</span>`;
+    const np = p.noPos, inner = `${thSpan(p)}<span class="no${np ? ' moved' : ''}"${np ? ` style="left:${np.x}%;top:${np.y}%"` : ''}>${pad(i + 1)}</span>`;
     return editing
       ? `<div class="fi ${S.freeSel === p.id ? 'sel' : ''}" data-fid="${p.id}" style="${st}">${inner}</div>`
       : `<button class="fi" data-go="${p.id}" data-flash style="${st}" aria-label="${pad(i + 1)} ${esc(loc(p.name))}">${inner}</button>`;
@@ -468,8 +472,8 @@ function bProducts(){
 }
 function bFree(){
   const sp = S.freeSel ? product(S.freeSel) : null;
-  return `<div style="padding-block:16px 64px"><p class="muted" style="margin:0">썸네일을 끌어서 배치하세요. 손을 떼면 저장되고, 방문자는 이 구성을 그대로 보게 됩니다.</p>
-  <div class="ftools">${sp ? `<span class="mono">${pad(plist().findIndex(x => x.id === sp.id) + 1)} · ${esc(sp.name || sp.id)}</span><label class="mono" for="fsize">크기</label><input type="range" id="fsize" min="8" max="45" step="1" value="${Math.round(fpos(sp).w)}">` : `<span class="muted">항목을 누르면 크기를 조절할 수 있어요.</span>`}</div>
+  return `<div style="padding-block:16px 64px"><p class="muted" style="margin:0">썸네일을 끌어서 배치하세요. 넘버만 끌면 넘버 위치를 따로 옮길 수 있어요. 손을 떼면 저장되고, 방문자는 이 구성을 그대로 보게 됩니다.</p>
+  <div class="ftools">${sp ? `<span class="mono">${pad(plist().findIndex(x => x.id === sp.id) + 1)} · ${esc(sp.name || sp.id)}</span><label class="mono" for="fsize">크기</label><input type="range" id="fsize" min="8" max="45" step="1" value="${Math.round(fpos(sp).w)}">` : `<span class="muted">항목을 누르면 크기를 조절할 수 있어요.</span>`}${sp && sp.noPos ? `<button class="btn" data-noreset>넘버 위치 초기화</button>` : ''}</div>
   <div class="freebox" id="freebox">${vFree(plist(), true)}</div></div>`;
 }
 function bArchive(){
@@ -617,6 +621,7 @@ document.addEventListener('click', e => {
   if (d.btab) { S.btab = d.btab; S.confirm = null; render(); return; }
   if (d.sel) { S.sel = d.sel; S.confirm = null; render(); return; }
   if (d.mv) { move(d.pid, +d.mv); return; }
+  if ('noreset' in d) { const p = product(S.freeSel); p.noPos = null; saveP(p, 0); rbody(); return; }
   if ('creset' in d) { const p = product(S.sel); p.crop = null; paintCrop(p); const z = document.getElementById('czoom'); if (z) z.value = 1; saveP(p, 0); return; }
   if ('rmthumb' in d) {
     if (S.confirm !== 'thumb') { S.confirm = 'thumb'; } else { const p = product(S.sel), old = p.thumb; p.thumb = null; p.crop = null; saveP(p, 0); S.confirm = null; if (old && S.assets) S.assets.delete(old).catch(() => {}); }
@@ -712,8 +717,35 @@ document.addEventListener('wheel', e => {
   p.crop = {...c, s}; paintCrop(p); const z = document.getElementById('czoom'); if (z) z.value = s; saveP(p, 500);
 }, {passive: false});
 
+/* free layout: dragging a number moves only the number, offset in % of its item's box */
+let ndrag = null;
+document.addEventListener('pointerdown', e => {
+  const no = e.target.closest('.free.edit .fi .no'); if (!no) return;
+  e.preventDefault();
+  const it = no.parentElement, r = it.getBoundingClientRect(), nr = no.getBoundingClientRect();
+  S.freeSel = it.dataset.fid;
+  ndrag = {id: it.dataset.fid, it, no, r, ox: e.clientX - nr.left, oy: e.clientY - nr.top, moved: false};
+  try { no.setPointerCapture(e.pointerId); } catch(er){}
+});
+document.addEventListener('pointermove', e => {
+  if (!ndrag) return;
+  const {r, no} = ndrag;
+  ndrag.x = +((e.clientX - ndrag.ox - r.left) / r.width * 100).toFixed(2);
+  ndrag.y = +((e.clientY - ndrag.oy - r.top) / r.height * 100).toFixed(2);
+  no.classList.add('moved'); no.style.left = ndrag.x + '%'; no.style.top = ndrag.y + '%'; ndrag.moved = true;
+});
+function endNo(){
+  if (!ndrag) return;
+  const dd = ndrag; ndrag = null;
+  if (dd.moved) { const p = product(dd.id); p.noPos = {x: dd.x, y: dd.y}; saveP(p, 0); }
+  rbody();
+}
+document.addEventListener('pointerup', endNo);
+document.addEventListener('pointercancel', endNo);
+
 /* free layout dragging (builder only) */
 document.addEventListener('pointerdown', e => {
+  if (e.target.closest('.free.edit .fi .no')) return;
   const it = e.target.closest('.free.edit .fi'); if (!it) return;
   e.preventDefault();
   const box = it.parentElement.getBoundingClientRect(), r0 = it.getBoundingClientRect();
