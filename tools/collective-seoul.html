@@ -78,6 +78,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .cell,.fi{-webkit-tap-highlight-color:transparent}
 .cell.flash,.fi.flash{color:var(--flash)}
 .th,.mini,.tbox{position:relative}
+.tph{position:absolute;left:50%;top:50%;width:30%;aspect-ratio:1;transform:translate(-50%,-50%);border:1px dashed var(--ink)}
+.mini .tph,.tbox .tph{width:60%}
 .tz{position:absolute;inset:0;display:block;overflow:hidden}
 .tz img,.tz .tm{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain;transform-origin:50% 50%}
 .tz .tm{background:var(--flash);-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat;visibility:hidden}
@@ -95,7 +97,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .free{position:relative;width:100%;aspect-ratio:5/8}
 .fi{position:absolute;display:block;aspect-ratio:1;transform:translate(-50%,-50%)}
 .fi .th{position:absolute;inset:12% 6% 0}
-.fi .no{top:-2px;left:-10%}
+.fi .no{top:0;left:0;font-size:27px;line-height:1;letter-spacing:0;transform:translate(-30%,-45%)}
 .free.edit{outline:1px dashed var(--mute)}
 .free.edit .fi{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
 .free.edit .fi.sel{outline:1px solid var(--ink);z-index:2}
@@ -229,16 +231,6 @@ const TX = {
   ko:{designer:'디자이너',typology:'유형',year:'연도',exhibition:'전시',caption:'설명',photo:'사진',photoTodo:'업로드 예정',archiveSub:'브랜드 히스토리',seoulSub:'24개의 제품',hint:'밑줄 친 언어를 한 번 더 누르면 입장합니다',prev:'이전',next:'다음',edit:'편집',empty:'아직 등록된 기록이 없습니다.',loading:'불러오는 중…',back:'뒤로',objects:'24 Objects'},
   en:{designer:'Designer',typology:'Typology',year:'Year',exhibition:'Exhibition',caption:'Caption',photo:'Photo',photoTodo:'to be added',archiveSub:'Brand history',seoulSub:'24 objects',hint:'Tap the underlined language again to enter',prev:'Prev',next:'Next',edit:'Edit',empty:'No entries yet.',loading:'Loading…',back:'Back',objects:'24 Objects'}
 };
-// Placeholder line drawings until the toon-render PNGs are uploaded.
-const PH = [
-  '<path d="M33 16v46M67 16v46M33 16h34M33 28h34M27 62h46v6H27zM31 68v22M69 68v22"/>',
-  '<ellipse cx="50" cy="34" rx="24" ry="7"/><path d="M26 34v5c0 5 48 5 48 0v-5M33 43l-7 45M67 43l7 45M31 70h38"/>',
-  '<path d="M34 18h32l10 26H24zM50 44v40M36 88h28"/>',
-  '<path d="M12 42h76v6H12zM18 48v40M82 48v40"/>',
-  '<path d="M42 14h16v9c0 4 14 10 14 31s-9 34-22 34-22-13-22-34 14-27 14-31z"/>',
-  '<path d="M22 12v78M78 12v78M22 30h56M22 52h56M22 74h56"/>'
-];
-
 const ls = {
   get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
   set(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
@@ -331,7 +323,7 @@ function fpos(p){
 /* ---------- views ---------- */
 // uploaded thumbnail: contain-fit in a square frame, then the builder crop (scale + offset in % of the frame); anything outside the frame is clipped
 function cropCss(c){ c = c || {s:1, x:0, y:0}; return `transform:translate(${c.x}%,${c.y}%) scale(${c.s})`; }
-function thumb(p){ if (!p.thumb) return `<svg viewBox="0 0 100 100" aria-hidden="true">${PH[IDS.indexOf(p.id) % PH.length]}</svg>`;
+function thumb(p){ if (!p.thumb) return `<span class="tph" aria-hidden="true"></span>`;
   const u = src(p.thumb), t = cropCss(p.crop);
   return `<span class="tz"><img src="${u}" alt="" loading="lazy" draggable="false" style="${t}"><i class="tm" style="--m:url('${u}');${t}"></i></span>`; }
 function bar(title, back, wide){ return `<header class="bar"><div class="wrap ${wide ? 'wide' : ''}"><button class="back" data-go="${back}" aria-label="${tx('back')}">←</button><div class="ttl mono">${esc(title)}</div></div></header>`; }
