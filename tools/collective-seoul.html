@@ -77,9 +77,12 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .enter.flash{color:var(--flash)}
 .cell,.fi{-webkit-tap-highlight-color:transparent}
 .cell.flash,.fi.flash{color:var(--flash)}
-.timg::after{content:"";position:absolute;inset:0;background:var(--flash);-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat;visibility:hidden}
-.flash .timg img{visibility:hidden}
-.flash .timg::after{visibility:visible}
+.th,.mini,.tbox{position:relative}
+.tz{position:absolute;inset:0;display:block;overflow:hidden}
+.tz img,.tz .tm{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain;transform-origin:50% 50%}
+.tz .tm{background:var(--flash);-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat;visibility:hidden}
+.flash .tz img{visibility:hidden}
+.flash .tz .tm{visibility:visible}
 .edit-link{position:fixed;left:0;right:0;bottom:calc(20px + env(safe-area-inset-bottom,0px));margin:auto;width:max-content;font-size:11px;color:var(--mute);text-decoration:underline;text-underline-offset:3px}
 
 /* gallery */
@@ -88,10 +91,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 14px}
 .cell{position:relative;display:block;width:100%;aspect-ratio:1}
 .cell .no,.fi .no{position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:9px;letter-spacing:.04em}
-.cell .th{position:absolute;inset:16% 10% 6%}
+.cell .th{position:absolute;inset:16% 11% 6%}
 .free{position:relative;width:100%;aspect-ratio:5/8}
 .fi{position:absolute;display:block;aspect-ratio:1;transform:translate(-50%,-50%)}
-.fi .th{position:absolute;inset:12% 0 0}
+.fi .th{position:absolute;inset:12% 6% 0}
 .fi .no{top:-2px;left:-10%}
 .free.edit{outline:1px dashed var(--mute)}
 .free.edit .fi{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
@@ -194,6 +197,13 @@ input[type=range]{accent-color:var(--ink);flex:1;min-width:120px}
 .btn.warn,.warn{border-color:var(--warn);color:var(--warn)}
 .thumbrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .tbox{width:88px;height:88px;border:var(--rule);padding:8px}
+.cropw{display:grid;gap:10px;width:min(100%,260px)}
+.crop{position:relative;width:100%;aspect-ratio:1;outline:1px dashed var(--mute);outline-offset:0;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.crop:active{cursor:grabbing}
+.crop .tz img{pointer-events:none}
+.crop svg{display:block;width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.4}
+.crow{display:flex;align-items:center;gap:8px}
+.crow input[type=range]{flex:1;min-width:0}
 .phl{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
 .phi{border:var(--rule)}
 .phi img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}
@@ -290,7 +300,8 @@ function normP(r, i, id){
     designers: normDesigners(r), name:txt(r.name), typology:txt(r.typology), caption:txt(r.caption, true),
     year: r.year ?? '', exhibition:txt(r.exhibition),
     photos: Array.isArray(r.photos) ? r.photos.slice() : [],
-    freePos: r.freePos ? {x:+r.freePos.x, y:+r.freePos.y, w:+r.freePos.w} : null};
+    freePos: r.freePos ? {x:+r.freePos.x, y:+r.freePos.y, w:+r.freePos.w} : null,
+    crop: r.crop && isFinite(+r.crop.s) ? {s:+r.crop.s, x:+r.crop.x || 0, y:+r.crop.y || 0} : null};
 }
 function normDesigners(r){
   const list = Array.isArray(r.designers) ? r.designers : [{label:'Designer', name:r.designer, ig:r.designerIg, email:r.designerEmail}];
@@ -318,7 +329,11 @@ function fpos(p){
 }
 
 /* ---------- views ---------- */
-function thumb(p){ return p.thumb ? `<img src="${src(p.thumb)}" alt="" loading="lazy" draggable="false">` : `<svg viewBox="0 0 100 100" aria-hidden="true">${PH[IDS.indexOf(p.id) % PH.length]}</svg>`; }
+// uploaded thumbnail: contain-fit in a square frame, then the builder crop (scale + offset in % of the frame); anything outside the frame is clipped
+function cropCss(c){ c = c || {s:1, x:0, y:0}; return `transform:translate(${c.x}%,${c.y}%) scale(${c.s})`; }
+function thumb(p){ if (!p.thumb) return `<svg viewBox="0 0 100 100" aria-hidden="true">${PH[IDS.indexOf(p.id) % PH.length]}</svg>`;
+  const u = src(p.thumb), t = cropCss(p.crop);
+  return `<span class="tz"><img src="${u}" alt="" loading="lazy" draggable="false" style="${t}"><i class="tm" style="--m:url('${u}');${t}"></i></span>`; }
 function bar(title, back, wide){ return `<header class="bar"><div class="wrap ${wide ? 'wide' : ''}"><button class="back" data-go="${back}" aria-label="${tx('back')}">←</button><div class="ttl mono">${esc(title)}</div></div></header>`; }
 function head(title, back){
   if (back) return `<header class="head nav"><button class="hback" data-go="${back}" aria-label="${tx('back')}"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M23 8H2.5M9 1.5L2.5 8 9 14.5"/></svg></button>${title ? `<h1 class="ptitle">${esc(title)}</h1>` : '<span></span>'}<span></span></header>`;
@@ -351,8 +366,8 @@ function vMenu(){
   return `<div class="page">${head('', '')}<main class="menu" data-fit="52"><button class="item" data-go="archive" data-flash>Archive</button><button class="item" data-go="seoul" data-flash>Collective Seoul</button></main></div>
   ${(S.canEdit || S.demo) ? `<button class="edit-link" data-go="builder">Builder · ${tx('edit')}</button>` : ''}`;
 }
-// thumbnail wrapper; an uploaded PNG also carries itself as a mask so the tap flash can recolor the line art
-function thSpan(p){ return p.thumb ? `<span class="th timg" style="--m:url('${src(p.thumb)}')">${thumb(p)}</span>` : `<span class="th">${thumb(p)}</span>`; }
+// thumbnail wrapper; an uploaded PNG also carries itself as a mask (.tm) so the tap flash can recolor the line art
+function thSpan(p){ return `<span class="th">${thumb(p)}</span>`; }
 function vGrid(ps){
   return `<div class="grid">${ps.map((p, i) => `<button class="cell" data-go="${p.id}" data-flash aria-label="${pad(i + 1)} ${esc(loc(p.name))}"><span class="no">${pad(i + 1)}</span>${thSpan(p)}</button>`).join('')}</div>`;
 }
@@ -432,7 +447,11 @@ function bList(){
 function bForm(){
   const p = product(S.sel), i = plist().findIndex(x => x.id === p.id);
   return `<div class="fhead"><h2>${pad(i + 1)} · ${esc(p.name || '이름 없음')}</h2><button class="btn" data-go="${p.id}">페이지 보기 →</button></div>
-  <div class="fld"><span class="mono">썸네일 · Toon render PNG</span><div class="thumbrow"><div class="tbox">${thumb(p)}</div>${upl('thumb')}
+  <div class="fld"><span class="mono">썸네일 · Toon render PNG</span>
+    ${p.thumb ? `<div class="cropw"><div class="crop" data-crop>${thumb(p)}</div>
+      <div class="crow"><span class="mono">크기</span><input type="range" id="czoom" min="0.3" max="4" step="0.01" value="${(p.crop || {s:1}).s}" aria-label="썸네일 크기"><button class="btn" data-creset>초기화</button></div>
+      <span class="muted">끌어서 위치 조정 · 점선 밖은 잘려요</span></div>` : ''}
+    <div class="thumbrow">${p.thumb ? '' : `<div class="tbox">${thumb(p)}</div>`}${upl('thumb')}
     ${p.thumb ? `<button class="btn ${S.confirm === 'thumb' ? 'warn' : ''}" data-rmthumb>${S.confirm === 'thumb' ? '한 번 더 누르면 삭제' : '삭제'}</button>` : ''}</div></div>
   ${oneF('data-f', 'name', 'Product name', p.name)}
   <div class="fld"><span class="mono">디자이너 · ${p.designers.length}명 (하단에 이 순서로 표시)</span>
@@ -559,7 +578,7 @@ async function upload(files, kind, aid){
     catch(e) { setStatus(errText(e)); return; }
     if (kind === 'thumb' || kind === 'photos') {
       const p = product(S.sel);
-      if (kind === 'thumb') { const old = p.thumb; p.thumb = r.id; saveP(p, 0); if (old) S.assets.delete(old).catch(() => {}); }
+      if (kind === 'thumb') { const old = p.thumb; p.thumb = r.id; p.crop = null; saveP(p, 0); if (old) S.assets.delete(old).catch(() => {}); }
       else { p.photos.push(r.id); saveP(p, 0); }
       const f2 = document.getElementById('bform'); if (f2) f2.innerHTML = bForm();
     } else if (kind === 'aphotos') {
@@ -606,8 +625,9 @@ document.addEventListener('click', e => {
   if (d.btab) { S.btab = d.btab; S.confirm = null; render(); return; }
   if (d.sel) { S.sel = d.sel; S.confirm = null; render(); return; }
   if (d.mv) { move(d.pid, +d.mv); return; }
+  if ('creset' in d) { const p = product(S.sel); p.crop = null; paintCrop(p); const z = document.getElementById('czoom'); if (z) z.value = 1; saveP(p, 0); return; }
   if ('rmthumb' in d) {
-    if (S.confirm !== 'thumb') { S.confirm = 'thumb'; } else { const p = product(S.sel), old = p.thumb; p.thumb = null; saveP(p, 0); S.confirm = null; if (old && S.assets) S.assets.delete(old).catch(() => {}); }
+    if (S.confirm !== 'thumb') { S.confirm = 'thumb'; } else { const p = product(S.sel), old = p.thumb; p.thumb = null; p.crop = null; saveP(p, 0); S.confirm = null; if (old && S.assets) S.assets.delete(old).catch(() => {}); }
     document.getElementById('bform').innerHTML = bForm(); return;
   }
   if ('dadd' in d) { const p = product(S.sel); p.designers.push({label:'Designer', name:'', ig:'', email:''}); saveP(p, 0); document.getElementById('bform').innerHTML = bForm(); return; }
@@ -662,6 +682,7 @@ document.addEventListener('input', e => {
   if (d.f) { const p = product(S.sel); setPath(p, d.f, t.value); saveP(p, 600); return; }
   if (d.cf) { const c = conf(); setPath(c, d.cf, t.value); saveC(c, 600); return; }
   if (d.af) { const aid = t.closest('[data-aid]').dataset.aid, en = aEntry(aid); setPath(en, d.af, t.value); edit('archive/' + aid, en, 600); return; }
+  if (t.id === 'czoom') { const p = product(S.sel); p.crop = {...(p.crop || {s:1, x:0, y:0}), s: +t.value}; paintCrop(p); saveP(p, 500); return; }
   if (t.id === 'fsize' && S.freeSel) {
     const p = product(S.freeSel); p.freePos = {...fpos(p), w: +t.value}; saveP(p, 500);
     const el = document.querySelector(`.free.edit [data-fid="${S.freeSel}"]`); if (el) el.style.width = t.value + '%';
@@ -672,6 +693,32 @@ document.addEventListener('change', e => {
   const card = t.closest('[data-aid]');
   upload([...t.files], t.dataset.up, card && card.dataset.aid); t.value = '';
 });
+
+/* thumbnail crop (builder only): drag pans, slider or wheel zooms */
+let cdrag = null;
+function paintCrop(p){ const t = cropCss(p.crop); document.querySelectorAll('[data-crop] .tz img,[data-crop] .tz .tm').forEach(el => el.style.transform = t); }
+document.addEventListener('pointerdown', e => {
+  const box = e.target.closest('[data-crop]'); if (!box) return;
+  e.preventDefault();
+  const p = product(S.sel), c = p.crop || {s:1, x:0, y:0};
+  cdrag = {p, box, w: box.getBoundingClientRect().width, sx: e.clientX, sy: e.clientY, x0: c.x, y0: c.y, moved: false};
+  try { box.setPointerCapture(e.pointerId); } catch(er){}
+});
+document.addEventListener('pointermove', e => {
+  if (!cdrag) return;
+  const p = cdrag.p, c = p.crop || {s:1, x:0, y:0};
+  p.crop = {s: c.s, x: +(cdrag.x0 + (e.clientX - cdrag.sx) / cdrag.w * 100).toFixed(2), y: +(cdrag.y0 + (e.clientY - cdrag.sy) / cdrag.w * 100).toFixed(2)};
+  cdrag.moved = true; paintCrop(p);
+});
+function endCrop(){ if (!cdrag) return; const {moved, p} = cdrag; cdrag = null; if (moved) saveP(p, 0); }
+document.addEventListener('pointerup', endCrop);
+document.addEventListener('pointercancel', endCrop);
+document.addEventListener('wheel', e => {
+  const box = e.target.closest && e.target.closest('[data-crop]'); if (!box) return;
+  e.preventDefault();
+  const p = product(S.sel), c = p.crop || {s:1, x:0, y:0}, s = Math.max(0.3, Math.min(4, +(c.s * Math.exp(-e.deltaY * 0.0015)).toFixed(3)));
+  p.crop = {...c, s}; paintCrop(p); const z = document.getElementById('czoom'); if (z) z.value = s; saveP(p, 500);
+}, {passive: false});
 
 /* free layout dragging (builder only) */
 document.addEventListener('pointerdown', e => {
