@@ -95,6 +95,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .cell .no,.fi .no{position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:9px;letter-spacing:.04em}
 .cell .th{position:absolute;inset:16% 11% 6%}
 .free{position:relative;width:100%;aspect-ratio:5/17}
+.freecut{position:relative;width:100%}
+.freecut>.free{position:absolute;top:0;left:0}
 .fi{position:absolute;display:block;aspect-ratio:1;transform:translate(-50%,-50%)}
 .fi .th{position:absolute;inset:12% 6% 0}
 .fi .no{top:0;left:0;font-size:11px;line-height:1;letter-spacing:0;white-space:nowrap;transform:translate(-30%,-45%)}
@@ -369,7 +371,13 @@ function thSpan(p){ return `<span class="th">${thumb(p)}</span>`; }
 function vGrid(ps){
   return `<div class="grid">${ps.map((p, i) => `<button class="cell" data-go="${p.id}" data-flash aria-label="${pad(i + 1)} ${esc(loc(p.name))}"><span class="no">${pad(i + 1)}</span>${thSpan(p)}</button>`).join('')}</div>`;
 }
+// public view: the canvas keeps its 5:17 coordinate space, but the box is cut just below the lowest item so no empty tail is left
+function freeCut(ps){ const b = Math.max(10, ...ps.map(p => { const f = fpos(p); return f.y + f.w * 5 / 17 / 2; })) + 1.5; return Math.min(100, b); }
 function vFree(ps, editing){
+  const inner = vFreeBox(ps, editing);
+  return editing ? inner : `<div class="freecut" style="aspect-ratio:5/${(17 * freeCut(ps) / 100).toFixed(3)}">${inner}</div>`;
+}
+function vFreeBox(ps, editing){
   return `<div class="free ${editing ? 'edit' : ''}">${ps.map((p, i) => {
     const f = fpos(p), st = `left:${f.x}%;top:${f.y}%;width:${f.w}%`;
     const np = p.noPos, inner = `${thSpan(p)}<span class="no${np ? ' moved' : ''}"${np ? ` style="left:${np.x}%;top:${np.y}%"` : ''}>${pad(i + 1)}</span>`;
