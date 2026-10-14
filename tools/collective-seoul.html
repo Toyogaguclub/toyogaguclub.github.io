@@ -161,6 +161,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .foot a{color:inherit;text-decoration:none}
 .foot a:hover{text-decoration:underline}
 .bfoot{display:flex;justify-content:center;padding-bottom:24px}
+.avid+.bfoot{padding-top:56px}
 .blink{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--ink);text-decoration:none;-webkit-tap-highlight-color:transparent}
 .blink span{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
 .blink svg{display:block;width:11px;height:14px;fill:none;stroke:currentColor;stroke-width:2.8;stroke-linecap:square;stroke-linejoin:miter}
@@ -168,8 +169,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 
 /* archive: two text columns, then exhibition list + photo stack */
 .alist{margin-top:56px;display:grid;grid-template-columns:minmax(0,1fr);gap:72px}
-.avid{margin-top:44px;aspect-ratio:16/9;background:#000;overflow:hidden}
-.avid+.alist{margin-top:44px}
+.avid{margin-top:72px;aspect-ratio:16/9;background:#000;overflow:hidden}
 .avid video{display:block;width:100%;height:100%;object-fit:cover;pointer-events:none}
 .avid video::-webkit-media-controls,.avid video::-webkit-media-controls-start-playback-button{display:none!important;-webkit-appearance:none}
 .acols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(14px,4vw,28px);align-items:start}
@@ -475,9 +475,9 @@ function vArchive(){
   const L = paras(c.introL), Rr = paras(c.introR);
   const cols = (L.length || Rr.length) ? `<div class="acols"><div class="acol" lang="ko">${L.map(t => `<p>${esc(t)}</p>`).join('')}</div><div class="acol" lang="en">${Rr.map(t => `<p>${esc(t)}</p>`).join('')}</div></div>` : '';
   const ex = a.length ? `<section class="exh" id="exh" data-fit="40">${exhHtml(a)}</section>` : (S.loaded ? '' : `<p class="empty">${tx('loading')}</p>`);
-  // silent looping clip above the text: no controls, plays like a moving image
+  // silent looping clip below the exhibition list, above the brief link: no controls, plays like a moving image
   const vid = c.video ? `<div class="avid"><video src="${src(c.video.id)}" muted autoplay loop playsinline preload="auto" disablepictureinpicture disableremoteplayback aria-hidden="true"></video></div>` : '';
-  return `<div class="page">${head('Archive', 'menu', true)}${vid}<main class="alist">${cols}${ex}</main>
+  return `<div class="page">${head('Archive', 'menu', true)}<main class="alist">${cols}${ex}</main>${vid}
   ${briefFoot(c.brief)}</div>`;
 }
 
