@@ -96,6 +96,20 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .cell .th{position:absolute;inset:16% 11% 6%}
 .free{position:relative;width:100%;aspect-ratio:5/17}
 .freecut{position:relative;width:100%}
+.fshape{position:absolute;display:block;background-size:cover;background-position:center;pointer-events:none}
+.free.edit .fshape{pointer-events:auto;cursor:move}
+.free.edit .fshape.sel{filter:drop-shadow(0 0 0 var(--ink))}
+.fh{position:absolute;width:14px;height:14px;margin:-7px 0 0 -7px;background:var(--paper);border:1.5px solid var(--ink);z-index:5;cursor:crosshair;touch-action:none}
+.fh:hover{background:var(--flash)}
+.fsline{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4;overflow:visible}
+.fsline polygon{fill:none;stroke:var(--ink);stroke-width:1;stroke-dasharray:4 3;vector-effect:non-scaling-stroke}
+.shlist{display:grid;gap:8px;margin-top:8px}
+.shrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px;border:1px solid var(--line-soft)}
+.shrow.on{border-color:var(--ink)}
+.shrow .sw{width:28px;height:28px;background-size:cover;background-position:center;border:1px solid var(--line-soft)}
+.shrow input[type=range]{width:140px}
+.texrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.texrow .tex{width:40px;height:40px;background-size:cover;background-position:center;border:1px solid var(--line-soft);padding:0}
 .freecut>.free{position:absolute;top:0;left:0}
 .fi{position:absolute;display:block;aspect-ratio:1;transform:translate(-50%,-50%)}
 .fi .th{position:absolute;inset:12% 6% 0}
@@ -316,7 +330,9 @@ function alist(){
   Object.keys(pend).forEach(k => { if (k.startsWith('archive/')) ids.add(k.slice(8)); });
   return [...ids].filter(id => !S.gone.has(id)).map(id => ({id, ...aEntry(id)})).sort((a, b) => a.order - b.order || a.id.localeCompare(b.id));
 }
-function conf(){ const r = (pend['site/config'] && pend['site/config'].data) || S.config || {}; return {logo: r.logo || null, brand: r.brand || '', introL: r.introL != null ? String(r.introL) : (r.archiveIntro && typeof r.archiveIntro === 'object' ? String(r.archiveIntro.ko || '') : txt(r.archiveIntro)), introR: r.introR != null ? String(r.introR) : (r.archiveIntro && typeof r.archiveIntro === 'object' ? String(r.archiveIntro.en || '') : ''), brief: {id: (r.brief && r.brief.id) || null, name: (r.brief && r.brief.name) || '', url: (r.brief && r.brief.url) || '', label: (r.brief && r.brief.label) || ''}}; }
+function conf(){ const r = (pend['site/config'] && pend['site/config'].data) || S.config || {}; return {logo: r.logo || null, brand: r.brand || '', introL: r.introL != null ? String(r.introL) : (r.archiveIntro && typeof r.archiveIntro === 'object' ? String(r.archiveIntro.ko || '') : txt(r.archiveIntro)), introR: r.introR != null ? String(r.introR) : (r.archiveIntro && typeof r.archiveIntro === 'object' ? String(r.archiveIntro.en || '') : ''), brief: {id: (r.brief && r.brief.id) || null, name: (r.brief && r.brief.name) || '', url: (r.brief && r.brief.url) || '', label: (r.brief && r.brief.label) || ''}, textures: Array.isArray(r.textures) ? r.textures.filter(Boolean) : [], shapes: normShapes(r.shapes)}; }
+// background shapes under the Free layout: a texture clipped to a polygon; points in % of the Free canvas (x of width, y of height)
+function normShapes(a){ return Array.isArray(a) ? a.filter(x => x && x.img && Array.isArray(x.pts) && x.pts.length >= 3).map(x => ({img: x.img, op: isFinite(+x.op) ? +x.op : 1, pts: x.pts.map(q => [+q[0] || 0, +q[1] || 0])})) : []; }
 function saveC(c, delay){ edit('site/config', c, delay); }
 
 function fpos(p){
@@ -372,13 +388,22 @@ function vGrid(ps){
   return `<div class="grid">${ps.map((p, i) => `<button class="cell" data-go="${p.id}" data-flash aria-label="${pad(i + 1)} ${esc(loc(p.name))}"><span class="no">${pad(i + 1)}</span>${thSpan(p)}</button>`).join('')}</div>`;
 }
 // public view: the canvas keeps its 5:17 coordinate space, but the box is cut just below the lowest item so no empty tail is left
-function freeCut(ps){ const b = Math.max(10, ...ps.map(p => { const f = fpos(p); return f.y + f.w * 5 / 17 / 2; })) + 1.5; return Math.min(100, b); }
+function freeCut(ps){ const b = Math.max(10, ...ps.map(p => { const f = fpos(p); return f.y + f.w * 5 / 17 / 2; }), ...conf().shapes.flatMap(x => x.pts.map(q => q[1]))) + 1.5; return Math.min(100, b); }
 function vFree(ps, editing){
   const inner = vFreeBox(ps, editing);
   return editing ? inner : `<div class="freecut" style="aspect-ratio:5/${(17 * freeCut(ps) / 100).toFixed(3)}">${inner}</div>`;
 }
+function shapeBox(sh){ const xs = sh.pts.map(q => q[0]), ys = sh.pts.map(q => q[1]), x0 = Math.min(...xs), y0 = Math.min(...ys), w = Math.max(.01, Math.max(...xs) - x0), h = Math.max(.01, Math.max(...ys) - y0); return {x0, y0, w, h}; }
+function shapesHtml(editing){
+  const sh = conf().shapes;
+  const body = sh.map((x, k) => { const b = shapeBox(x), poly = x.pts.map(q => `${((q[0] - b.x0) / b.w * 100).toFixed(2)}% ${((q[1] - b.y0) / b.h * 100).toFixed(2)}%`).join(',');
+    return `<i class="fshape ${editing && S.shapeSel === k ? 'sel' : ''}" ${editing ? `data-shape="${k}"` : ''} style="left:${b.x0}%;top:${b.y0}%;width:${b.w}%;height:${b.h}%;opacity:${x.op};background-image:url('${src(x.img)}');clip-path:polygon(${poly})"></i>`; }).join('');
+  const cur = editing && sh[S.shapeSel];
+  const handles = cur ? `<svg class="fsline" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon points="${cur.pts.map(q => q.join(',')).join(' ')}"/></svg>` + cur.pts.map((q, n) => `<b class="fh" data-fh="${n}" style="left:${q[0]}%;top:${q[1]}%"></b>`).join('') : '';
+  return `<div class="fshapes">${body}${handles}</div>`;
+}
 function vFreeBox(ps, editing){
-  return `<div class="free ${editing ? 'edit' : ''}">${ps.map((p, i) => {
+  return `<div class="free ${editing ? 'edit' : ''}">${shapesHtml(editing)}${ps.map((p, i) => {
     const f = fpos(p), st = `left:${f.x}%;top:${f.y}%;width:${f.w}%`;
     const np = p.noPos, inner = `${thSpan(p)}<span class="no${np ? ' moved' : ''}"${np ? ` style="left:${np.x}%;top:${np.y}%"` : ''}>${pad(i + 1)}</span>`;
     return editing
@@ -484,7 +509,19 @@ function bFree(){
   const sp = S.freeSel ? product(S.freeSel) : null;
   return `<div style="padding-block:16px 64px"><p class="muted" style="margin:0">썸네일을 끌어서 배치하세요. 넘버만 끌면 넘버 위치를 따로 옮길 수 있어요. 손을 떼면 저장되고, 방문자는 이 구성을 그대로 보게 됩니다.</p>
   <div class="ftools">${sp ? `<span class="mono">${pad(plist().findIndex(x => x.id === sp.id) + 1)} · ${esc(sp.name || sp.id)}</span><label class="mono" for="fsize">크기</label><input type="range" id="fsize" min="8" max="45" step="1" value="${Math.round(fpos(sp).w)}">` : `<span class="muted">항목을 누르면 크기를 조절할 수 있어요.</span>`}${sp && sp.noPos ? `<button class="btn" data-noreset>넘버 위치 초기화</button>` : ''}</div>
+  ${bShapes()}
   <div class="freebox" id="freebox">${vFree(plist(), true)}</div></div>`;
+}
+function bShapes(){
+  const c = conf(), k = S.shapeSel;
+  return `<div class="fld"><span class="mono">배경 도형 · 제품 아래에 깔려요</span>
+    <div class="texrow"><span class="muted">텍스처를 눌러 도형 추가</span>${c.textures.map(t => `<button class="tex" data-shadd="${t}" style="background-image:url('${src(t)}')" aria-label="이 텍스처로 도형 추가"></button>`).join('')}${upl('texture', false, 'image/png,image/jpeg,image/webp', '+ 텍스처 업로드')}</div>
+    <div class="shlist">${c.shapes.map((x, n) => `<div class="shrow ${n === k ? 'on' : ''}"><button class="sw" data-shsel="${n}" style="background-image:url('${src(x.img)}')" aria-label="도형 ${n + 1} 선택"></button><button class="btn" data-shsel="${n}">도형 ${n + 1}${n === k ? ' · 편집 중' : ''}</button>
+      <label class="mono" for="shop${n}">투명도</label><input type="range" id="shop${n}" data-shop="${n}" min="0" max="1" step="0.01" value="${x.op}"><span class="mono" data-shopv="${n}">${Math.round(x.op * 100)}%</span>
+      <button class="btn" data-shz="${n}" data-dir="-1" aria-label="뒤로">뒤로</button><button class="btn" data-shz="${n}" data-dir="1" aria-label="앞으로">앞으로</button>
+      <button class="btn" data-shpt="${n}">+ 꼭짓점</button>${x.pts.length > 3 ? `<button class="btn" data-shptrm="${n}">− 꼭짓점</button>` : ''}
+      <button class="btn ${S.confirm === 'sh' + n ? 'warn' : ''}" data-shrm="${n}">${S.confirm === 'sh' + n ? '한 번 더 누르면 삭제' : '삭제'}</button></div>`).join('')}</div>
+    ${c.shapes.length ? `<span class="muted">도형을 선택하면 꼭짓점(□)이 보여요. 꼭짓점을 끌면 모양이, 도형 안쪽을 끌면 위치가 바뀌어요.</span>` : ''}</div>`;
 }
 function bArchive(){
   const c = conf(), a = alist();
@@ -591,6 +628,8 @@ async function upload(files, kind, aid){
       const e = aEntry(aid); e.photos.push(r.id); edit('archive/' + aid, e, 0); rbody();
     } else if (kind === 'brief') {
       const c = conf(), old = c.brief.id; c.brief.id = r.id; c.brief.name = f.name; saveC(c, 0); if (old) S.assets.delete(old).catch(() => {}); rbody();
+    } else if (kind === 'texture') {
+      const c = conf(); c.textures.push(r.id); saveC(c, 0); rbody();
     } else if (kind === 'logo') {
       const c = conf(), old = c.logo; c.logo = r.id; saveC(c, 0); if (old) S.assets.delete(old).catch(() => {}); rbody();
     }
@@ -631,6 +670,12 @@ document.addEventListener('click', e => {
   if (d.btab) { S.btab = d.btab; S.confirm = null; render(); return; }
   if (d.sel) { S.sel = d.sel; S.confirm = null; render(); return; }
   if (d.mv) { move(d.pid, +d.mv); return; }
+  if (d.shadd) { const c = conf(); c.shapes.push({img: d.shadd, op: .6, pts: [[20, 5], [80, 5], [80, 25], [20, 25]]}); S.shapeSel = c.shapes.length - 1; saveC(c, 0); rbody(); return; }
+  if (d.shsel) { S.shapeSel = S.shapeSel === +d.shsel ? null : +d.shsel; S.confirm = null; rbody(); return; }
+  if (d.shz) { const c = conf(), n = +d.shz, m = n + +d.dir; if (m < 0 || m >= c.shapes.length) return; [c.shapes[n], c.shapes[m]] = [c.shapes[m], c.shapes[n]]; if (S.shapeSel === n) S.shapeSel = m; saveC(c, 0); rbody(); return; }
+  if (d.shpt) { const c = conf(), x = c.shapes[+d.shpt], P = x.pts; let bi = 0, bl = -1; P.forEach((q, n) => { const r2 = P[(n + 1) % P.length], l = Math.hypot(r2[0] - q[0], (r2[1] - q[1]) * 17 / 5); if (l > bl) { bl = l; bi = n; } }); const a = P[bi], b2 = P[(bi + 1) % P.length]; P.splice(bi + 1, 0, [+((a[0] + b2[0]) / 2).toFixed(2), +((a[1] + b2[1]) / 2).toFixed(2)]); S.shapeSel = +d.shpt; saveC(c, 0); rbody(); return; }
+  if (d.shptrm) { const c = conf(), x = c.shapes[+d.shptrm]; if (x.pts.length > 3) x.pts.pop(); S.shapeSel = +d.shptrm; saveC(c, 0); rbody(); return; }
+  if (d.shrm) { const n = +d.shrm; if (S.confirm !== 'sh' + n) { S.confirm = 'sh' + n; rbody(); return; } const c = conf(); c.shapes.splice(n, 1); S.shapeSel = null; S.confirm = null; saveC(c, 0); rbody(); return; }
   if ('noreset' in d) { const p = product(S.freeSel); p.noPos = null; saveP(p, 0); rbody(); return; }
   if ('creset' in d) { const p = product(S.sel); p.crop = null; paintCrop(p); const z = document.getElementById('czoom'); if (z) z.value = 1; saveP(p, 0); return; }
   if ('rmthumb' in d) {
@@ -689,6 +734,7 @@ document.addEventListener('input', e => {
   if (d.f) { const p = product(S.sel); setPath(p, d.f, t.value); saveP(p, 600); return; }
   if (d.cf) { const c = conf(); setPath(c, d.cf, t.value); saveC(c, 600); return; }
   if (d.af) { const aid = t.closest('[data-aid]').dataset.aid, en = aEntry(aid); setPath(en, d.af, t.value); edit('archive/' + aid, en, 600); return; }
+  if (d.shop) { const c = conf(), n = +d.shop; c.shapes[n].op = +t.value; saveC(c, 400); const el = document.querySelector(`.free.edit [data-shape="${n}"]`); if (el) el.style.opacity = t.value; const v = document.querySelector(`[data-shopv="${n}"]`); if (v) v.textContent = Math.round(t.value * 100) + '%'; return; }
   if (t.id === 'czoom') { const p = product(S.sel); p.crop = {...(p.crop || {s:1, x:0, y:0}), s: +t.value}; paintCrop(p); saveP(p, 500); return; }
   if (t.id === 'fsize' && S.freeSel) {
     const p = product(S.freeSel); p.freePos = {...fpos(p), w: +t.value}; saveP(p, 500);
@@ -726,6 +772,27 @@ document.addEventListener('wheel', e => {
   const p = product(S.sel), c = p.crop || {s:1, x:0, y:0}, s = Math.max(0.3, Math.min(4, +(c.s * Math.exp(-e.deltaY * 0.0015)).toFixed(3)));
   p.crop = {...c, s}; paintCrop(p); const z = document.getElementById('czoom'); if (z) z.value = s; saveP(p, 500);
 }, {passive: false});
+
+/* background shapes (builder only): drag a corner handle to reshape, drag inside the selected shape to move it */
+let sdrag = null;
+function paintShapes(){ const L = document.querySelector('.free.edit .fshapes'); if (L) L.outerHTML = shapesHtml(true); }
+document.addEventListener('pointerdown', e => {
+  const h = e.target.closest('.free.edit .fh'), body = !h && e.target.closest('.free.edit .fshape'); if (!h && !body) return;
+  e.preventDefault();
+  const box = e.target.closest('.free').getBoundingClientRect(), c = conf();
+  const k = h ? S.shapeSel : +body.dataset.shape;
+  if (!h && S.shapeSel !== k) { S.shapeSel = k; S.confirm = null; rbody(); }
+  sdrag = {c, k, n: h ? +h.dataset.fh : -1, box, sx: e.clientX, sy: e.clientY, p0: c.shapes[k].pts.map(q => q.slice()), moved: false};
+});
+document.addEventListener('pointermove', e => {
+  if (!sdrag) return;
+  const {c, k, n, box, p0} = sdrag, dx = (e.clientX - sdrag.sx) / box.width * 100, dy = (e.clientY - sdrag.sy) / box.height * 100, r2 = v => +v.toFixed(2);
+  c.shapes[k].pts = p0.map((q, m) => (n < 0 || m === n) ? [r2(q[0] + dx), r2(q[1] + dy)] : q.slice());
+  sdrag.moved = true; pend['site/config'] = {data: c, v: ++vc}; paintShapes();
+});
+function endShape(){ if (!sdrag) return; const {c, moved} = sdrag; sdrag = null; if (moved) saveC(c, 0); }
+document.addEventListener('pointerup', endShape);
+document.addEventListener('pointercancel', endShape);
 
 /* free layout: dragging a number moves only the number, offset in % of its item's box */
 let ndrag = null;

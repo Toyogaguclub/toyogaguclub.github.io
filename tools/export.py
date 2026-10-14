@@ -22,6 +22,7 @@ for p in products.values():
 for a in archive.values():
     ids += list(a.get('photos') or []) + [a.get('image')]
 ids += [config.get('logo'), (config.get('brief') or {}).get('id')]
+ids += list(config.get('textures') or []) + [x.get('img') for x in (config.get('shapes') or [])]
 ids = [i for i in dict.fromkeys(ids) if i]
 
 os.makedirs(os.path.join(out, 'img'), exist_ok=True)
