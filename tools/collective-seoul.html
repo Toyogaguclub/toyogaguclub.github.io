@@ -168,6 +168,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 
 /* archive: two text columns, then exhibition list + photo stack */
 .alist{margin-top:56px;display:grid;grid-template-columns:minmax(0,1fr);gap:72px}
+.avid{margin-top:44px;aspect-ratio:16/9;background:#000;overflow:hidden}
+.avid+.alist{margin-top:44px}
+.avid video{display:block;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.avid video::-webkit-media-controls,.avid video::-webkit-media-controls-start-playback-button{display:none!important;-webkit-appearance:none}
 .acols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(14px,4vw,28px);align-items:start}
 .acol{display:grid;gap:1.3em;font-size:clamp(9.5px,2.5vw,12.5px);line-height:1.5;overflow-wrap:anywhere}
 .acol p{margin:0;white-space:pre-line}
@@ -233,6 +237,7 @@ input[type=range]{accent-color:var(--ink);flex:1;min-width:120px}
 .btn.warn,.warn{border-color:var(--warn);color:var(--warn)}
 .thumbrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .tbox{width:88px;height:88px;border:var(--rule);padding:8px}
+.bvid{display:block;width:200px;aspect-ratio:16/9;background:#000;object-fit:cover}
 .cropw{display:grid;gap:10px;width:min(100%,260px)}
 .crop{position:relative;width:100%;aspect-ratio:1;outline:1px dashed var(--mute);outline-offset:0;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
 .crop:active{cursor:grabbing}
@@ -346,7 +351,7 @@ function alist(){
   Object.keys(pend).forEach(k => { if (k.startsWith('archive/')) ids.add(k.slice(8)); });
   return [...ids].filter(id => !S.gone.has(id)).map(id => ({id, ...aEntry(id)})).sort((a, b) => a.order - b.order || a.id.localeCompare(b.id));
 }
-function conf(){ const r = (pend['site/config'] && pend['site/config'].data) || S.config || {}; return {logo: r.logo || null, brand: r.brand || '', introL: r.introL != null ? String(r.introL) : (r.archiveIntro && typeof r.archiveIntro === 'object' ? String(r.archiveIntro.ko || '') : txt(r.archiveIntro)), introR: r.introR != null ? String(r.introR) : (r.archiveIntro && typeof r.archiveIntro === 'object' ? String(r.archiveIntro.en || '') : ''), brief: {id: (r.brief && r.brief.id) || null, name: (r.brief && r.brief.name) || '', url: (r.brief && r.brief.url) || '', label: (r.brief && r.brief.label) || ''}, textures: Array.isArray(r.textures) ? r.textures.filter(Boolean) : [], shapes: normShapes(r.shapes)}; }
+function conf(){ const r = (pend['site/config'] && pend['site/config'].data) || S.config || {}; return {logo: r.logo || null, brand: r.brand || '', introL: r.introL != null ? String(r.introL) : (r.archiveIntro && typeof r.archiveIntro === 'object' ? String(r.archiveIntro.ko || '') : txt(r.archiveIntro)), introR: r.introR != null ? String(r.introR) : (r.archiveIntro && typeof r.archiveIntro === 'object' ? String(r.archiveIntro.en || '') : ''), brief: {id: (r.brief && r.brief.id) || null, name: (r.brief && r.brief.name) || '', url: (r.brief && r.brief.url) || '', label: (r.brief && r.brief.label) || ''}, textures: Array.isArray(r.textures) ? r.textures.filter(Boolean) : [], shapes: normShapes(r.shapes), video: (r.video && r.video.id) ? {id: r.video.id} : null}; }
 // background shapes under the Free layout: a texture clipped to a polygon; points in % of the Free canvas (x of width, y of height)
 function normShapes(a){ return Array.isArray(a) ? a.filter(x => x && x.img && Array.isArray(x.pts) && x.pts.length >= 3).map(x => ({img: x.img, op: isFinite(+x.op) ? +x.op : 1, pts: x.pts.map(q => [+q[0] || 0, +q[1] || 0])})) : []; }
 function saveC(c, delay){ edit('site/config', c, delay); }
@@ -470,7 +475,9 @@ function vArchive(){
   const L = paras(c.introL), Rr = paras(c.introR);
   const cols = (L.length || Rr.length) ? `<div class="acols"><div class="acol" lang="ko">${L.map(t => `<p>${esc(t)}</p>`).join('')}</div><div class="acol" lang="en">${Rr.map(t => `<p>${esc(t)}</p>`).join('')}</div></div>` : '';
   const ex = a.length ? `<section class="exh" id="exh" data-fit="40">${exhHtml(a)}</section>` : (S.loaded ? '' : `<p class="empty">${tx('loading')}</p>`);
-  return `<div class="page">${head('Archive', 'menu', true)}<main class="alist">${cols}${ex}</main>
+  // silent looping clip above the text: no controls, plays like a moving image
+  const vid = c.video ? `<div class="avid"><video src="${src(c.video.id)}" muted autoplay loop playsinline preload="auto" disablepictureinpicture disableremoteplayback aria-hidden="true"></video></div>` : '';
+  return `<div class="page">${head('Archive', 'menu', true)}${vid}<main class="alist">${cols}${ex}</main>
   ${briefFoot(c.brief)}</div>`;
 }
 
@@ -541,7 +548,9 @@ function bShapes(){
 }
 function bArchive(){
   const c = conf(), a = alist();
-  return `<div class="bnarrow"><div class="fld"><span class="mono">Archive 소개 문구 · 두 단 (빈 줄로 문단 구분)</span>
+  return `<div class="bnarrow"><div class="fld"><span class="mono">Archive 상단 영상 · MP4 (소리 없이 자동 반복 재생)</span>
+    <div class="thumbrow">${c.video ? `<video class="bvid" src="${src(c.video.id)}" muted loop autoplay playsinline></video>` : `<span class="muted">영상 없음</span>`}${upl('avideo', false, 'video/mp4', c.video ? '영상 교체' : '영상 업로드')}${c.video ? `<button class="btn ${S.confirm === 'avideo' ? 'warn' : ''}" data-rmvideo>${S.confirm === 'avideo' ? '한 번 더 누르면 빼기' : '영상 빼기'}</button>` : ''}</div></div>
+  <div class="fld"><span class="mono">Archive 소개 문구 · 두 단 (빈 줄로 문단 구분)</span>
     <div class="ahalf"><div class="fld"><label class="mono" for="c-il">왼쪽 단</label><textarea id="c-il" data-cf="introL">${esc(c.introL)}</textarea></div>
     <div class="fld"><label class="mono" for="c-ir">오른쪽 단</label><textarea id="c-ir" data-cf="introR">${esc(c.introR)}</textarea></div></div></div>
   <div class="ahead"><span class="mono">전시 목록 · ${a.length}개 (위에서부터 이 순서로 표시)</span><button class="btn solid" data-aadd>+ 전시 추가</button></div>
@@ -591,6 +600,7 @@ function render(){
   else app.innerHTML = vIntro();
   fitText();
   revealGallery();
+  document.querySelectorAll('.avid video').forEach(v => { v.muted = true; const p = v.play(); if (p && p.catch) p.catch(() => {}); });
 }
 // first visit: hold the gallery until every thumbnail is decoded (or 3 s pass) so it appears in one go instead of piece by piece
 function revealGallery(){
@@ -653,6 +663,8 @@ async function upload(files, kind, aid){
       const e = aEntry(aid); e.photos.push(r.id); edit('archive/' + aid, e, 0); rbody();
     } else if (kind === 'brief') {
       const c = conf(), old = c.brief.id; c.brief.id = r.id; c.brief.name = f.name; saveC(c, 0); if (old) S.assets.delete(old).catch(() => {}); rbody();
+    } else if (kind === 'avideo') {
+      const c = conf(), old = c.video && c.video.id; c.video = {id: r.id}; saveC(c, 0); if (old) S.assets.delete(old).catch(() => {}); rbody();
     } else if (kind === 'texture') {
       const c = conf(); c.textures.push(r.id); saveC(c, 0); rbody();
     } else if (kind === 'logo') {
@@ -701,6 +713,7 @@ document.addEventListener('click', e => {
   if (d.shpt) { const c = conf(), x = c.shapes[+d.shpt], P = x.pts; let bi = 0, bl = -1; P.forEach((q, n) => { const r2 = P[(n + 1) % P.length], l = Math.hypot(r2[0] - q[0], (r2[1] - q[1]) * 17 / 5); if (l > bl) { bl = l; bi = n; } }); const a = P[bi], b2 = P[(bi + 1) % P.length]; P.splice(bi + 1, 0, [+((a[0] + b2[0]) / 2).toFixed(2), +((a[1] + b2[1]) / 2).toFixed(2)]); S.shapeSel = +d.shpt; saveC(c, 0); rbody(); return; }
   if (d.shptrm) { const c = conf(), x = c.shapes[+d.shptrm]; if (x.pts.length > 3) x.pts.pop(); S.shapeSel = +d.shptrm; saveC(c, 0); rbody(); return; }
   if (d.shrm) { const n = +d.shrm; if (S.confirm !== 'sh' + n) { S.confirm = 'sh' + n; rbody(); return; } const c = conf(); c.shapes.splice(n, 1); S.shapeSel = null; S.confirm = null; saveC(c, 0); rbody(); return; }
+  if ('rmvideo' in d) { if (S.confirm !== 'avideo') { S.confirm = 'avideo'; rbody(); return; } const c = conf(), old = c.video && c.video.id; c.video = null; S.confirm = null; saveC(c, 0); if (old && S.assets) S.assets.delete(old).catch(() => {}); rbody(); return; }
   if ('noreset' in d) { const p = product(S.freeSel); p.noPos = null; saveP(p, 0); rbody(); return; }
   if ('creset' in d) { const p = product(S.sel); p.crop = null; paintCrop(p); const z = document.getElementById('czoom'); if (z) z.value = 1; saveP(p, 0); return; }
   if ('rmthumb' in d) {
