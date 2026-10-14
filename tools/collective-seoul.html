@@ -137,6 +137,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 /* detail */
 .det{flex:1;display:flex;flex-direction:column}
 .dtop{margin-top:56px;text-align:center}
+.hstack+.det .dtop{margin-top:20px}
 .dname{margin-top:8px;font-size:26px;line-height:1.2;letter-spacing:-.005em;overflow-wrap:anywhere}
 .dtop .num{font-size:20px}
 .det .big{width:min(78%,340px);aspect-ratio:1;margin:40px auto 0}
@@ -584,7 +585,7 @@ function render(){
   if (r === 'menu') app.innerHTML = vMenu();
   else if (r === 'archive') app.innerHTML = vArchive();
   else if (r === 'seoul') app.innerHTML = vSeoul();
-  else if (IDS.includes(r)) app.innerHTML = `<div class="page">${head('', 'seoul')}${vDetail(r, true)}</div>`;
+  else if (IDS.includes(r)) app.innerHTML = `<div class="page">${head('', 'seoul', true)}${vDetail(r, true)}</div>`;
   else if (r === 'builder' && !STATIC) app.innerHTML = vBuilder();
   else app.innerHTML = vIntro();
   fitText();
