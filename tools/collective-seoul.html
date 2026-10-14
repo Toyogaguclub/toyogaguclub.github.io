@@ -94,7 +94,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .cell{position:relative;display:block;width:100%;aspect-ratio:1}
 .cell .no,.fi .no{position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:9px;letter-spacing:.04em}
 .cell .th{position:absolute;inset:16% 11% 6%}
-.free{position:relative;width:100%;aspect-ratio:5/8}
+.free{position:relative;width:100%;aspect-ratio:5/17}
 .fi{position:absolute;display:block;aspect-ratio:1;transform:translate(-50%,-50%)}
 .fi .th{position:absolute;inset:12% 6% 0}
 .fi .no{top:0;left:0;font-size:11px;line-height:1;letter-spacing:0;white-space:nowrap;transform:translate(-30%,-45%)}
@@ -319,9 +319,11 @@ function saveC(c, delay){ edit('site/config', c, delay); }
 
 function fpos(p){
   if (p.freePos && isFinite(p.freePos.x)) return p.freePos;
-  // default: 3 columns x 8 rows in display order, each nudged a little off the grid
+  // default: rows of 2 and 3 alternating (2,3,2,3…) in display order, each nudged a little off the grid
   const i = Math.max(0, plist().findIndex(x => x.id === p.id)), r = rnd(IDS.indexOf(p.id) + 7);
-  return {x: 18 + (i % 3) * 32 + (r() - .5) * 10, y: 5.5 + Math.floor(i / 3) * 12.4 + (r() - .5) * 3, w: 17 + r() * 4};
+  let row = 0, k = i; while (k >= (row % 2 ? 3 : 2)) { k -= row % 2 ? 3 : 2; row++; }
+  const three = row % 2 === 1, cx = three ? [19, 50, 81][k] : [29, 71][k];
+  return {x: cx + (r() - .5) * 10, y: 5.6 + row * 9.85 + (r() - .5) * 2.4, w: three ? 25 + r() * 4 : 31 + r() * 6};
 }
 
 /* ---------- views ---------- */
