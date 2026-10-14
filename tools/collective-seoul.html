@@ -20,6 +20,7 @@
 }
 *,*::before,*::after{box-sizing:border-box;transition:none!important;animation:none!important}
 html,body{height:100%}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{background:var(--paper);color:var(--ink);font-family:var(--f-sans);font-size:15px;font-weight:500;line-height:1.55;-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:inherit}
 :focus-visible{outline:1px solid var(--ink);outline-offset:3px}
@@ -94,7 +95,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .cell{position:relative;display:block;width:100%;aspect-ratio:1}
 .cell .no,.fi .no{position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:9px;letter-spacing:.04em}
 .cell .th{position:absolute;inset:16% 11% 6%}
-.free{position:relative;width:100%;aspect-ratio:5/17}
+.free{position:relative;width:100%;aspect-ratio:5/17;container-type:inline-size}
 .freecut{position:relative;width:100%}
 .fshape{position:absolute;display:block;background-size:cover;background-position:center;pointer-events:none}
 .free.edit .fshape{pointer-events:auto;cursor:move}
@@ -113,7 +114,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .freecut>.free{position:absolute;top:0;left:0}
 .fi{position:absolute;display:block;aspect-ratio:1;transform:translate(-50%,-50%)}
 .fi .th{position:absolute;inset:12% 6% 0}
-.fi .no{top:0;left:0;font-size:11px;line-height:1;letter-spacing:0;white-space:nowrap;transform:translate(-30%,-45%)}
+.fi .no{top:0;left:0;font-size:clamp(6.5px,1.9cqw,20px);line-height:1;letter-spacing:0;white-space:nowrap;transform:translate(-30%,-45%)}
 .fi .no.moved{transform:none}
 .free.edit .fi .no{cursor:move;padding:2px;margin:-2px;z-index:3}
 .free.edit .fi .no:hover{background:var(--flash)}
