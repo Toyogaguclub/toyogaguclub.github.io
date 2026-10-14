@@ -100,6 +100,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 /* gallery */
 .views{display:flex;justify-content:center;margin-top:18px}
 .gal{margin-top:56px;margin-bottom:24px}
+.gal.wait{visibility:hidden}
 .gal.gfree{margin-inline:calc(10px - max(16px,7vw))}
 @media (min-width:640px){.gal.gfree{margin-inline:-24px}}
 .freecut{overflow:clip}
@@ -364,7 +365,7 @@ function fpos(p){
 function cropCss(c){ c = c || {s:1, x:0, y:0}; return `transform:translate(${c.x}%,${c.y}%) scale(${c.s})`; }
 function thumb(p){ if (!p.thumb) return `<span class="tph" aria-hidden="true"></span>`;
   const u = src(p.thumb), t = cropCss(p.crop);
-  return `<span class="tz"><img src="${u}" alt="" loading="lazy" draggable="false" style="${t}"><i class="tm" style="--m:url('${u}');${t}"></i></span>`; }
+  return `<span class="tz"><img src="${u}" alt="" decoding="async" draggable="false" style="${t}"><i class="tm" style="--m:url('${u}');${t}"></i></span>`; }
 function bar(title, back, wide){ return `<header class="bar"><div class="wrap ${wide ? 'wide' : ''}"><button class="back" data-go="${back}" aria-label="${tx('back')}">←</button><div class="ttl mono">${esc(title)}</div></div></header>`; }
 function head(title, back, stack){
   if (back) return `<header class="head nav${stack ? ' hstack' : ''}"><button class="hback" data-go="${back}" aria-label="${tx('back')}"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M23 8H2.5M9 1.5L2.5 8 9 14.5"/></svg></button>${title ? `<h1 class="ptitle${title.includes('\n') ? ' ml' : ''}">${esc(title)}</h1>` : '<span></span>'}<span></span></header>`;
@@ -589,6 +590,15 @@ function render(){
   else if (r === 'builder' && !STATIC) app.innerHTML = vBuilder();
   else app.innerHTML = vIntro();
   fitText();
+  revealGallery();
+}
+// first visit: hold the gallery until every thumbnail is decoded (or 3 s pass) so it appears in one go instead of piece by piece
+function revealGallery(){
+  const g = document.querySelector('main.gal'); if (!g || S.galShown) return;
+  g.classList.add('wait');
+  const imgs = [...g.querySelectorAll('img')].map(im => im.decode ? im.decode().catch(() => {}) : Promise.resolve());
+  const show = () => { if (S.galShown) return; S.galShown = true; document.querySelectorAll('main.gal.wait').forEach(x => x.classList.remove('wait')); };
+  Promise.all(imgs).then(show); setTimeout(show, 3000);
 }
 // one shared size per group: as large as the cap allows while its widest line still fits on one line
 function fitText(){

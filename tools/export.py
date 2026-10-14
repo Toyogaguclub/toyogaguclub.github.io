@@ -8,7 +8,7 @@ usage: export.py PAGE DB_DIR ASSET_DIR OUT_DIR
   OUT_DIR   site root to write (index.html, img/, .nojekyll)
 Exits 2 and prints the ids when a referenced asset file is missing.
 """
-import glob, json, os, shutil, sys
+import glob, json, os, shutil, subprocess, sys
 
 page, dbdir, adir, out = sys.argv[1:5]
 def load(pattern):
@@ -24,6 +24,7 @@ for a in archive.values():
 ids += [config.get('logo'), (config.get('brief') or {}).get('id')]
 ids += list(config.get('textures') or []) + [x.get('img') for x in (config.get('shapes') or [])]
 ids = [i for i in dict.fromkeys(ids) if i]
+thumbs = [p.get('thumb') for p in sorted(products.values(), key=lambda p: p.get('order', 0)) if p.get('thumb')]
 
 os.makedirs(os.path.join(out, 'img'), exist_ok=True)
 files, missing = {}, []
@@ -32,7 +33,11 @@ for i in ids:
     if not hit:
         missing.append(i); continue
     ext = os.path.splitext(hit[0])[1].lower()
-    shutil.copyfile(hit[0], os.path.join(out, 'img', i + ext))
+    dst = os.path.join(out, 'img', i + ext)
+    shutil.copyfile(hit[0], dst)
+    # thumbnails show at most ~340 css px; 900px keeps them sharp on 3x phones and much lighter to load
+    if i in thumbs and ext == '.png':
+        subprocess.run(['node', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resize.js'), dst, '900'], check=True)
     files[i] = 'img/' + i + ext
 if missing:
     print('MISSING', ' '.join(missing)); sys.exit(2)
@@ -45,6 +50,7 @@ body = open(page, encoding='utf-8').read()
 html = ('<!doctype html><html lang="ko"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
         '<link rel="stylesheet" href="https://use.typekit.net/ygn5fve.css">'
+        + ''.join('<link rel="preload" as="image" href="%s">' % files[t] for t in thumbs) +
         '</head><body><script>window.__CS_STATIC__=' + data + ';</script>\n' + body + '\n</body></html>')
 open(os.path.join(out, 'index.html'), 'w', encoding='utf-8').write(html)
 open(os.path.join(out, '.nojekyll'), 'w').close()
