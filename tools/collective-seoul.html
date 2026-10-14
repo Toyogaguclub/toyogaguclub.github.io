@@ -72,10 +72,9 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .langs button{padding:3px 6px}
 .langs.row{flex-direction:row;gap:10px;font-size:11px}
 .vtog{display:flex;gap:14px}
-.vtog button{padding:6px;color:var(--ink);opacity:.3;-webkit-tap-highlight-color:transparent}
+.vtog button{padding:6px;opacity:.3;-webkit-tap-highlight-color:transparent}
 .vtog button.cur{opacity:1}
-.vtog svg{display:block;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.3}
-.vtog .cur svg{fill:currentColor}
+.vtog svg{display:block;width:16px;height:16px;fill:#8a8a8a}
 .hint{margin:22px 0 0;color:var(--mute);font-size:11px}
 
 /* menu */
@@ -428,8 +427,8 @@ function vFreeBox(ps, editing){
 }
 function vSeoul(){
   const ps = plist();
-  return `<div class="page">${head('Collective\nSeoul\n2026', 'menu', true)}
-  <div class="views"><div class="vtog"><button data-view="free" class="${S.view === 'free' ? 'cur' : ''}" aria-label="Free" title="Free"><svg viewBox="0 0 18 18" aria-hidden="true"><rect x="1.5" y="2" width="5" height="5"/><rect x="10.5" y="1" width="5.5" height="5.5"/><rect x="6" y="10.5" width="5" height="5"/><rect x="13" y="11.5" width="3.5" height="3.5"/><rect x="1" y="12.5" width="3" height="3"/></svg></button><button data-view="grid" class="${S.view === 'grid' ? 'cur' : ''}" aria-label="Grid" title="Grid"><svg viewBox="0 0 18 18" aria-hidden="true"><rect x="1" y="1" width="4.5" height="4.5"/><rect x="6.75" y="1" width="4.5" height="4.5"/><rect x="12.5" y="1" width="4.5" height="4.5"/><rect x="1" y="6.75" width="4.5" height="4.5"/><rect x="6.75" y="6.75" width="4.5" height="4.5"/><rect x="12.5" y="6.75" width="4.5" height="4.5"/><rect x="1" y="12.5" width="4.5" height="4.5"/><rect x="6.75" y="12.5" width="4.5" height="4.5"/><rect x="12.5" y="12.5" width="4.5" height="4.5"/></svg></button></div></div>
+  return `<div class="page">${head('Collective\nSeoul', 'menu', true)}
+  <div class="views"><div class="vtog"><button data-view="free" class="${S.view === 'free' ? 'cur' : ''}" aria-label="Free" title="Free"><svg viewBox="0 0 18 18" aria-hidden="true"><rect x="1" y="2" width="4" height="4"/><rect x="11" y="0" width="4" height="4"/><rect x="6" y="12" width="4" height="4"/></svg></button><button data-view="grid" class="${S.view === 'grid' ? 'cur' : ''}" aria-label="Grid" title="Grid"><svg viewBox="0 0 18 18" aria-hidden="true"><rect x="0" y="0" width="4" height="4"/><rect x="7" y="0" width="4" height="4"/><rect x="14" y="0" width="4" height="4"/><rect x="0" y="7" width="4" height="4"/><rect x="7" y="7" width="4" height="4"/><rect x="14" y="7" width="4" height="4"/><rect x="0" y="14" width="4" height="4"/><rect x="7" y="14" width="4" height="4"/><rect x="14" y="14" width="4" height="4"/></svg></button></div></div>
   <main class="gal${S.view === 'grid' ? '' : ' gfree'}">${S.view === 'grid' ? vGrid(ps) : vFree(ps, false)}</main></div>`;
 }
 function vDetail(id, full){
