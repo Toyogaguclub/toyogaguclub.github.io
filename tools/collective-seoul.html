@@ -50,8 +50,9 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .head.nav{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;padding-top:48px}
 .head.nav .ptitle{margin:0}
 .head.nav.hstack{display:flex;flex-direction:column;align-items:stretch;padding-top:40px}
-.head.nav.hstack .hback{align-self:flex-start}
-.head.nav.hstack .ptitle{margin-top:28px}
+.head.nav.hstack .hback{align-self:center;margin-left:0}
+.head.nav.hstack .ptitle{margin-top:20px;white-space:pre-line}
+.head.nav.hstack .ptitle.ml{line-height:.98}
 .head.nav.hstack>span{display:none}
 .head .hback{justify-self:start;margin-left:-8px;padding:8px;color:var(--ink);-webkit-tap-highlight-color:transparent}
 .head .hback svg{display:block;width:24px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:square;stroke-linejoin:miter}
@@ -70,6 +71,11 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .langs{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:13px;letter-spacing:.01em}
 .langs button{padding:3px 6px}
 .langs.row{flex-direction:row;gap:10px;font-size:11px}
+.vtog{display:flex;gap:14px}
+.vtog button{padding:6px;color:var(--ink);opacity:.3;-webkit-tap-highlight-color:transparent}
+.vtog button.cur{opacity:1}
+.vtog svg{display:block;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.3}
+.vtog .cur svg{fill:currentColor}
 .hint{margin:22px 0 0;color:var(--mute);font-size:11px}
 
 /* menu */
@@ -361,7 +367,7 @@ function thumb(p){ if (!p.thumb) return `<span class="tph" aria-hidden="true"></
   return `<span class="tz"><img src="${u}" alt="" loading="lazy" draggable="false" style="${t}"><i class="tm" style="--m:url('${u}');${t}"></i></span>`; }
 function bar(title, back, wide){ return `<header class="bar"><div class="wrap ${wide ? 'wide' : ''}"><button class="back" data-go="${back}" aria-label="${tx('back')}">←</button><div class="ttl mono">${esc(title)}</div></div></header>`; }
 function head(title, back, stack){
-  if (back) return `<header class="head nav${stack ? ' hstack' : ''}"><button class="hback" data-go="${back}" aria-label="${tx('back')}"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M23 8H2.5M9 1.5L2.5 8 9 14.5"/></svg></button>${title ? `<h1 class="ptitle">${esc(title)}</h1>` : '<span></span>'}<span></span></header>`;
+  if (back) return `<header class="head nav${stack ? ' hstack' : ''}"><button class="hback" data-go="${back}" aria-label="${tx('back')}"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M23 8H2.5M9 1.5L2.5 8 9 14.5"/></svg></button>${title ? `<h1 class="ptitle${title.includes('\n') ? ' ml' : ''}">${esc(title)}</h1>` : '<span></span>'}<span></span></header>`;
   return `<header class="head">${back ? `<button class="hback" data-go="${back}" aria-label="${tx('back')}">←</button>` : ''}<button class="brand" data-go="intro" aria-label="${esc(brandName())} · 처음으로">${conf().logo ? `<img src="${src(conf().logo)}" alt="${esc(brandName())}">` : esc(brandName())}</button>${title ? `<h1 class="ptitle">${esc(title)}</h1>` : ''}</header>`;
 }
 function brandName(){ return conf().brand || 'Toyo Gagu Club'; }
@@ -422,8 +428,8 @@ function vFreeBox(ps, editing){
 }
 function vSeoul(){
   const ps = plist();
-  return `<div class="page">${head('Collective Seoul', 'menu', true)}
-  <div class="views"><div class="langs row"><button data-view="free" class="${S.view === 'free' ? 'on' : ''}">Free</button><button data-view="grid" class="${S.view === 'grid' ? 'on' : ''}">Grid</button></div></div>
+  return `<div class="page">${head('Collective\nSeoul\n2026', 'menu', true)}
+  <div class="views"><div class="vtog"><button data-view="free" class="${S.view === 'free' ? 'cur' : ''}" aria-label="Free" title="Free"><svg viewBox="0 0 18 18" aria-hidden="true"><rect x="1.5" y="2" width="5" height="5"/><rect x="10.5" y="1" width="5.5" height="5.5"/><rect x="6" y="10.5" width="5" height="5"/><rect x="13" y="11.5" width="3.5" height="3.5"/><rect x="1" y="12.5" width="3" height="3"/></svg></button><button data-view="grid" class="${S.view === 'grid' ? 'cur' : ''}" aria-label="Grid" title="Grid"><svg viewBox="0 0 18 18" aria-hidden="true"><rect x="1" y="1" width="4.5" height="4.5"/><rect x="6.75" y="1" width="4.5" height="4.5"/><rect x="12.5" y="1" width="4.5" height="4.5"/><rect x="1" y="6.75" width="4.5" height="4.5"/><rect x="6.75" y="6.75" width="4.5" height="4.5"/><rect x="12.5" y="6.75" width="4.5" height="4.5"/><rect x="1" y="12.5" width="4.5" height="4.5"/><rect x="6.75" y="12.5" width="4.5" height="4.5"/><rect x="12.5" y="12.5" width="4.5" height="4.5"/></svg></button></div></div>
   <main class="gal${S.view === 'grid' ? '' : ' gfree'}">${S.view === 'grid' ? vGrid(ps) : vFree(ps, false)}</main></div>`;
 }
 function vDetail(id, full){
