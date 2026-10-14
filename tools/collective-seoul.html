@@ -49,6 +49,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .head .ptitle{margin:44px 0 0;font-size:24px;font-weight:500;letter-spacing:-.005em;line-height:1.2}
 .head.nav{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;padding-top:48px}
 .head.nav .ptitle{margin:0}
+.head.nav.hstack{display:flex;flex-direction:column;align-items:stretch;padding-top:40px}
+.head.nav.hstack .hback{align-self:flex-start}
+.head.nav.hstack .ptitle{margin-top:28px}
+.head.nav.hstack>span{display:none}
 .head .hback{justify-self:start;margin-left:-8px;padding:8px;color:var(--ink);-webkit-tap-highlight-color:transparent}
 .head .hback svg{display:block;width:24px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:square;stroke-linejoin:miter}
 .inset{padding-inline:clamp(0px,6.5vw,32px)}
@@ -91,6 +95,9 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 /* gallery */
 .views{display:flex;justify-content:center;margin-top:18px}
 .gal{margin-top:56px;margin-bottom:24px}
+.gal.gfree{margin-inline:calc(10px - max(16px,7vw))}
+@media (min-width:640px){.gal.gfree{margin-inline:-24px}}
+.freecut{overflow:clip}
 .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 14px}
 .cell{position:relative;display:block;width:100%;aspect-ratio:1}
 .cell .no,.fi .no{position:absolute;top:0;left:0;font-family:var(--f-mono);font-size:9px;letter-spacing:.04em}
@@ -257,7 +264,8 @@ const ls = {
 };
 const S = {
   lang: 'en',
-  view: ls.get('cs.view') === 'grid' ? 'grid' : 'free',
+  // a bare link (the QR) always lands on the Free view; the remembered Free/Grid choice applies once inside
+  view: location.hash && ls.get('cs.view') === 'grid' ? 'grid' : 'free',
   products:{}, archive:{}, config:{}, gone:new Set(),
   db:null, assets:null, canEdit:false, ready:false, loaded:false,
   demo: !STATIC && !(window.claude && window.claude.use),
@@ -352,8 +360,8 @@ function thumb(p){ if (!p.thumb) return `<span class="tph" aria-hidden="true"></
   const u = src(p.thumb), t = cropCss(p.crop);
   return `<span class="tz"><img src="${u}" alt="" loading="lazy" draggable="false" style="${t}"><i class="tm" style="--m:url('${u}');${t}"></i></span>`; }
 function bar(title, back, wide){ return `<header class="bar"><div class="wrap ${wide ? 'wide' : ''}"><button class="back" data-go="${back}" aria-label="${tx('back')}">←</button><div class="ttl mono">${esc(title)}</div></div></header>`; }
-function head(title, back){
-  if (back) return `<header class="head nav"><button class="hback" data-go="${back}" aria-label="${tx('back')}"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M23 8H2.5M9 1.5L2.5 8 9 14.5"/></svg></button>${title ? `<h1 class="ptitle">${esc(title)}</h1>` : '<span></span>'}<span></span></header>`;
+function head(title, back, stack){
+  if (back) return `<header class="head nav${stack ? ' hstack' : ''}"><button class="hback" data-go="${back}" aria-label="${tx('back')}"><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M23 8H2.5M9 1.5L2.5 8 9 14.5"/></svg></button>${title ? `<h1 class="ptitle">${esc(title)}</h1>` : '<span></span>'}<span></span></header>`;
   return `<header class="head">${back ? `<button class="hback" data-go="${back}" aria-label="${tx('back')}">←</button>` : ''}<button class="brand" data-go="intro" aria-label="${esc(brandName())} · 처음으로">${conf().logo ? `<img src="${src(conf().logo)}" alt="${esc(brandName())}">` : esc(brandName())}</button>${title ? `<h1 class="ptitle">${esc(title)}</h1>` : ''}</header>`;
 }
 function brandName(){ return conf().brand || 'Toyo Gagu Club'; }
@@ -414,9 +422,9 @@ function vFreeBox(ps, editing){
 }
 function vSeoul(){
   const ps = plist();
-  return `<div class="page">${head('Collective Seoul', 'menu')}
+  return `<div class="page">${head('Collective Seoul', 'menu', true)}
   <div class="views"><div class="langs row"><button data-view="free" class="${S.view === 'free' ? 'on' : ''}">Free</button><button data-view="grid" class="${S.view === 'grid' ? 'on' : ''}">Grid</button></div></div>
-  <main class="gal">${S.view === 'grid' ? vGrid(ps) : vFree(ps, false)}</main></div>`;
+  <main class="gal${S.view === 'grid' ? '' : ' gfree'}">${S.view === 'grid' ? vGrid(ps) : vFree(ps, false)}</main></div>`;
 }
 function vDetail(id, full){
   const ps = plist(), i = ps.findIndex(p => p.id === id), p = ps[i];
@@ -455,7 +463,7 @@ function vArchive(){
   const L = paras(c.introL), Rr = paras(c.introR);
   const cols = (L.length || Rr.length) ? `<div class="acols"><div class="acol" lang="ko">${L.map(t => `<p>${esc(t)}</p>`).join('')}</div><div class="acol" lang="en">${Rr.map(t => `<p>${esc(t)}</p>`).join('')}</div></div>` : '';
   const ex = a.length ? `<section class="exh" id="exh" data-fit="40">${exhHtml(a)}</section>` : (S.loaded ? '' : `<p class="empty">${tx('loading')}</p>`);
-  return `<div class="page">${head('Archive', 'menu')}<main class="alist">${cols}${ex}</main>
+  return `<div class="page">${head('Archive', 'menu', true)}<main class="alist">${cols}${ex}</main>
   ${briefFoot(c.brief)}</div>`;
 }
 
@@ -564,7 +572,7 @@ function vBuilder(){
 }
 
 /* ---------- render & routing (bare #tokens, no transitions) ---------- */
-function route(){ return location.hash.replace(/^#/, '') || 'intro'; }
+function route(){ return location.hash.replace(/^#/, '') || 'seoul'; }
 function go(r){ S.confirm = null; if (location.hash === '#' + r) { render(); } else { location.hash = r; } }
 function render(){
   const r = route(), app = document.getElementById('app');
